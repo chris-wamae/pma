@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'view/manager/manager_dashboard.dart';
 
 void main() {
   runApp(const MyApp());

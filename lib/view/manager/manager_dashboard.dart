@@ -6,16 +6,13 @@ class ManagerDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Manager Dashboard"),
-      ),
+      appBar: AppBar(title: const Text("Manager Dashboard")),
 
       body: Padding(
         padding: const EdgeInsets.all(20),
 
         child: Column(
           children: [
-
             Container(
               width: double.infinity,
               height: 200,
@@ -29,13 +26,9 @@ class ManagerDashboard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
 
                 children: [
-
                   Text(
                     "Task & Issues Overview",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
 
                   SizedBox(height: 20),
