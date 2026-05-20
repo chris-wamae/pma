@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pma/view/manager/maintenance_screen.dart';
+import 'package:pma/view/manager/task_management_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -68,7 +69,15 @@ class ManagerDashboard extends StatelessWidget {
               height: 50,
 
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+
+                    MaterialPageRoute(
+                      builder: (context) => const TaskManagementScreen(),
+                    ),
+                  );
+                },
 
                 child: const Text("Task Management"),
               ),
