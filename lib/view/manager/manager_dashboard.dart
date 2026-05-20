@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pma/view/manager/maintenance_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -47,7 +48,14 @@ class ManagerDashboard extends StatelessWidget {
               height: 50,
 
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MaintenanceScreen(),
+                    ),
+                  );
+                },
 
                 child: const Text("Issues & Maintenance"),
               ),
