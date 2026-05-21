@@ -3,6 +3,7 @@ import 'package:pma/view/manager/maintenance_screen.dart';
 import 'package:pma/view/manager/task_management_screen.dart';
 import 'package:pma/view/manager/communication_screen.dart';
 import 'package:pma/view/manager/worker_performance_screen.dart';
+import 'package:pma/view/manager/schedule_repair_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -112,6 +113,13 @@ class ManagerDashboard extends StatelessWidget {
               "Worker Performance",
               Icons.people,
               const WorkerPerformanceScreen(),
+            ),
+
+            functionCard(
+              context,
+              "Schedule Repair",
+              Icons.calendar_month,
+              const ScheduleRepairScreen(),
             ),
           ],
         ),
