@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pma/view/manager/maintenance_screen.dart';
 import 'package:pma/view/manager/task_management_screen.dart';
 import 'package:pma/view/manager/communication_screen.dart';
+import 'package:pma/view/manager/worker_performance_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -106,7 +107,12 @@ class ManagerDashboard extends StatelessWidget {
               const CommunicationScreen(),
             ),
 
-            functionCard(context, "Service Coordination", Icons.people, null),
+            functionCard(
+              context,
+              "Worker Performance",
+              Icons.people,
+              const WorkerPerformanceScreen(),
+            ),
           ],
         ),
       ),
