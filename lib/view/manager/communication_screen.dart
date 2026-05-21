@@ -8,14 +8,14 @@ class CommunicationScreen extends StatefulWidget {
 }
 
 class _CommunicationScreenState extends State<CommunicationScreen> {
-  final TextEditingController announcementController = TextEditingController();
+  String selectedTenant = "All Tenants";
 
-  String announcementText = "Water supply maintenance tomorrow.";
+  final TextEditingController messageController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Communication")),
+      appBar: AppBar(title: const Text("New Announcement")),
 
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -24,52 +24,80 @@ class _CommunicationScreenState extends State<CommunicationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-            const Text(
-              "Manager Announcement",
+            const Text("To", style: TextStyle(fontWeight: FontWeight.bold)),
 
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            const SizedBox(height: 10),
+
+            DropdownButtonFormField<String>(
+              value: selectedTenant,
+
+              items: const [
+                DropdownMenuItem(
+                  value: "All Tenants",
+                  child: Text("All Tenants"),
+                ),
+
+                DropdownMenuItem(value: "Block A", child: Text("Block A")),
+
+                DropdownMenuItem(value: "Block B", child: Text("Block B")),
+              ],
+
+              onChanged: (value) {
+                setState(() {
+                  selectedTenant = value!;
+                });
+              },
             ),
 
             const SizedBox(height: 20),
 
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    const Text(
-                      "Current Announcement",
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Text(announcementText),
-                  ],
-                ),
-              ),
+            const Text(
+              "Message",
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 10),
 
             TextField(
-              controller: announcementController,
+              controller: messageController,
+              maxLines: 6,
 
               decoration: const InputDecoration(
-                labelText: "Enter New Announcement",
-
                 border: OutlineInputBorder(),
+                hintText: "Type announcement here...",
               ),
             ),
 
             const SizedBox(height: 20),
+
+            const Text(
+              "Attachment",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(10),
+              ),
+
+              child: const Row(
+                children: [
+                  Icon(Icons.picture_as_pdf),
+
+                  SizedBox(width: 10),
+
+                  Text("notice.pdf"),
+                ],
+              ),
+            ),
+
+            const Spacer(),
 
             SizedBox(
               width: double.infinity,
@@ -77,9 +105,11 @@ class _CommunicationScreenState extends State<CommunicationScreen> {
 
               child: ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    announcementText = announcementController.text;
-                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Announcement Sent Successfully"),
+                    ),
+                  );
                 },
 
                 child: const Text("Send Announcement"),

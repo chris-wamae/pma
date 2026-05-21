@@ -9,15 +9,19 @@ class ManagerDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Maintenance Dashboard")),
+      appBar: AppBar(
+        title: const Text("Maintenance Dashboard"),
+        centerTitle: false,
+      ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
+            // Statistics
             Row(
               children: [
                 Expanded(child: dashboardBox("24", "Total Requests")),
@@ -42,12 +46,19 @@ class ManagerDashboard extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            const Text(
-              "Recent Requests",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Recent Requests",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                TextButton(onPressed: () {}, child: const Text("View All")),
+              ],
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             requestCard("Leaking Pipe", "Room A-12", "Urgent", Colors.red),
 
@@ -65,78 +76,37 @@ class ManagerDashboard extends StatelessWidget {
               Colors.green,
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 25),
 
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MaintenanceScreen(),
-                    ),
-                  );
-                },
-
-                child: const Text("Issues & Maintenance"),
-              ),
+            const Text(
+              "Manager Functions",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
 
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TaskManagementScreen(),
-                    ),
-                  );
-                },
-
-                child: const Text("Task Management"),
-              ),
+            functionCard(
+              context,
+              "Issues & Maintenance",
+              Icons.build,
+              const MaintenanceScreen(),
             ),
 
-            const SizedBox(height: 15),
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CommunicationScreen(),
-                    ),
-                  );
-                },
-
-                child: const Text("Communication"),
-              ),
+            functionCard(
+              context,
+              "Task Management",
+              Icons.assignment,
+              const TaskManagementScreen(),
             ),
 
-            const SizedBox(height: 15),
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-
-              child: ElevatedButton(
-                onPressed: () {},
-
-                child: const Text("Service Coordination"),
-              ),
+            functionCard(
+              context,
+              "Communication",
+              Icons.campaign,
+              const CommunicationScreen(),
             ),
+
+            functionCard(context, "Service Coordination", Icons.people, null),
           ],
         ),
       ),
@@ -145,49 +115,71 @@ class ManagerDashboard extends StatelessWidget {
 
   Widget dashboardBox(String number, String title) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 120,
 
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-
+        border: Border.all(color: Colors.grey.shade400),
         borderRadius: BorderRadius.circular(12),
       ),
 
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+
         children: [
           Text(
             number,
-
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(height: 5),
+          const SizedBox(height: 10),
 
-          Text(title),
+          Text(title, style: const TextStyle(fontSize: 18)),
         ],
       ),
     );
   }
 
-  Widget requestCard(
-    String title,
-    String room,
-    String status,
-    Color statusColor,
-  ) {
+  Widget requestCard(String title, String room, String status, Color color) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
 
       child: ListTile(
-        title: Text(title),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
 
         subtitle: Text(room),
 
         trailing: Text(
           status,
-
-          style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
         ),
+      ),
+    );
+  }
+
+  Widget functionCard(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Widget? screen,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+
+      child: ListTile(
+        leading: Icon(icon),
+
+        title: Text(title),
+
+        trailing: const Icon(Icons.arrow_forward_ios),
+
+        onTap: () {
+          if (screen != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => screen),
+            );
+          }
+        },
       ),
     );
   }
