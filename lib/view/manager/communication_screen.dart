@@ -10,26 +10,36 @@ class CommunicationScreen extends StatefulWidget {
 class _CommunicationScreenState extends State<CommunicationScreen> {
   String selectedTenant = "All Tenants";
 
-  final TextEditingController messageController = TextEditingController();
+  final TextEditingController messageController = TextEditingController(
+    text:
+        "Water supply will be interrupted tomorrow from 10:00 AM to 2:00 PM for maintenance works. Please plan ahead. Thank you.",
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("New Announcement")),
+      appBar: AppBar(title: const Text("New Announcement"), centerTitle: true),
 
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
+        child: ListView(
           children: [
-            const Text("To", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              "To",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             DropdownButtonFormField<String>(
               value: selectedTenant,
+
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
 
               items: const [
                 DropdownMenuItem(
@@ -53,51 +63,48 @@ class _CommunicationScreenState extends State<CommunicationScreen> {
 
             const Text(
               "Message",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             TextField(
               controller: messageController,
-              maxLines: 6,
+              maxLines: 8,
 
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "Type announcement here...",
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
 
             const SizedBox(height: 20),
 
             const Text(
-              "Attachment",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              "Attach File (Optional)",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(15),
+            Card(
+              elevation: 3,
 
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
 
-              child: const Row(
-                children: [
-                  Icon(Icons.picture_as_pdf),
+              child: const ListTile(
+                leading: Icon(Icons.picture_as_pdf, color: Colors.red),
 
-                  SizedBox(width: 10),
+                title: Text("notice.pdf"),
 
-                  Text("notice.pdf"),
-                ],
+                trailing: Icon(Icons.close),
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 30),
 
             SizedBox(
               width: double.infinity,
