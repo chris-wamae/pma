@@ -6,36 +6,79 @@ class ComplaintsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Complaints")),
+      appBar: AppBar(title: const Text("Complaints"), centerTitle: true),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            complaintCard(
-              "Noise Complaint",
-              "Unit B-2-4",
-              "Open",
-              Colors.orange,
-            ),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("All"),
+                  ),
+                ),
 
-            complaintCard(
-              "Poor Cleanliness",
-              "Unit C-1-2",
-              "Open",
-              Colors.orange,
-            ),
+                const SizedBox(width: 8),
 
-            complaintCard("Parking Issue", "Block D", "Resolved", Colors.green),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Open"),
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Resolved"),
+                  ),
+                ),
+              ],
+            ),
 
             const SizedBox(height: 20),
+
+            Expanded(
+              child: ListView(
+                children: [
+                  complaintCard(
+                    "Noise Complaint",
+                    "Unit B-2-4",
+                    "12 May 2025",
+                    "Open",
+                    Colors.orange,
+                  ),
+
+                  complaintCard(
+                    "Poor Cleanliness",
+                    "Unit C-1-2",
+                    "11 May 2025",
+                    "Open",
+                    Colors.orange,
+                  ),
+
+                  complaintCard(
+                    "Parking Issue",
+                    "Block D",
+                    "10 May 2025",
+                    "Resolved",
+                    Colors.green,
+                  ),
+                ],
+              ),
+            ),
 
             SizedBox(
               width: double.infinity,
               height: 50,
 
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -44,7 +87,9 @@ class ComplaintsScreen extends StatelessWidget {
                   );
                 },
 
-                child: const Text("Generate Report"),
+                icon: const Icon(Icons.description),
+
+                label: const Text("Generate Report"),
               ),
             ),
           ],
@@ -56,16 +101,23 @@ class ComplaintsScreen extends StatelessWidget {
   Widget complaintCard(
     String title,
     String location,
+    String date,
     String status,
     Color color,
   ) {
     return Card(
+      elevation: 3,
+
       margin: const EdgeInsets.only(bottom: 12),
 
-      child: ListTile(
-        title: Text(title),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
-        subtitle: Text(location),
+      child: ListTile(
+        leading: const Icon(Icons.report_problem),
+
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+        subtitle: Text("$location • $date"),
 
         trailing: Text(
           status,
