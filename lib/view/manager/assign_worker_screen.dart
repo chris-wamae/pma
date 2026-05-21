@@ -13,7 +13,7 @@ class _AssignWorkerScreenState extends State<AssignWorkerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Assign Worker")),
+      appBar: AppBar(title: const Text("Assign Worker"), centerTitle: true),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -24,6 +24,7 @@ class _AssignWorkerScreenState extends State<AssignWorkerScreen> {
               decoration: InputDecoration(
                 hintText: "Search worker...",
                 prefixIcon: const Icon(Icons.search),
+
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -32,15 +33,24 @@ class _AssignWorkerScreenState extends State<AssignWorkerScreen> {
 
             const SizedBox(height: 20),
 
-            workerTile("John Tan", "Plumbing", "Available"),
+            Expanded(
+              child: ListView(
+                children: [
+                  workerCard("John Tan", "Plumbing", "4.8", "Available"),
 
-            workerTile("Ahmed Ali", "Electrical", "Available"),
+                  workerCard("Ahmed Ali", "Electrical", "4.6", "Available"),
 
-            workerTile("Mei Ling", "Maintenance", "Busy"),
+                  workerCard("Mei Ling", "Maintenance", "4.5", "Busy"),
 
-            workerTile("Ravi Kumar", "General Repair", "Available"),
-
-            const Spacer(),
+                  workerCard(
+                    "Ravi Kumar",
+                    "General Repair",
+                    "4.7",
+                    "Available",
+                  ),
+                ],
+              ),
+            ),
 
             SizedBox(
               width: double.infinity,
@@ -64,20 +74,44 @@ class _AssignWorkerScreenState extends State<AssignWorkerScreen> {
     );
   }
 
-  Widget workerTile(String name, String skill, String status) {
-    return RadioListTile<String>(
-      value: name,
-      groupValue: selectedWorker,
+  Widget workerCard(String name, String skill, String rating, String status) {
+    return Card(
+      elevation: 3,
 
-      onChanged: (value) {
-        setState(() {
-          selectedWorker = value!;
-        });
-      },
+      margin: const EdgeInsets.only(bottom: 12),
 
-      title: Text(name),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
-      subtitle: Text("$skill • $status"),
+      child: RadioListTile<String>(
+        value: name,
+        groupValue: selectedWorker,
+
+        onChanged: (value) {
+          setState(() {
+            selectedWorker = value!;
+          });
+        },
+
+        secondary: const CircleAvatar(child: Icon(Icons.person)),
+
+        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Text("$skill • $rating ★"),
+
+            Text(
+              status,
+              style: TextStyle(
+                color: status == "Available" ? Colors.green : Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
