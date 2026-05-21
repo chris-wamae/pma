@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pma/view/manager/maintenance_screen.dart';
 import 'package:pma/view/manager/task_management_screen.dart';
+import 'package:pma/view/manager/communication_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -8,38 +9,60 @@ class ManagerDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Manager Dashboard")),
+      appBar: AppBar(title: const Text("Maintenance Dashboard")),
 
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
 
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
-            Container(
-              width: double.infinity,
-              height: 200,
+            Row(
+              children: [
+                Expanded(child: dashboardBox("24", "Total Requests")),
 
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(20),
-              ),
+                const SizedBox(width: 10),
 
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                Expanded(child: dashboardBox("10", "In Progress")),
+              ],
+            ),
 
-                children: [
-                  Text(
-                    "Task & Issues Overview",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+            const SizedBox(height: 10),
 
-                  SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(child: dashboardBox("12", "Completed")),
 
-                  Text("5 Pending Tasks"),
-                  Text("3 Urgent Issues"),
-                  Text("2 Ongoing Repairs"),
-                ],
-              ),
+                const SizedBox(width: 10),
+
+                Expanded(child: dashboardBox("5", "Urgent")),
+              ],
+            ),
+
+            const SizedBox(height: 25),
+
+            const Text(
+              "Recent Requests",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            requestCard("Leaking Pipe", "Room A-12", "Urgent", Colors.red),
+
+            requestCard(
+              "Broken Aircond",
+              "Room B-03",
+              "In Progress",
+              Colors.orange,
+            ),
+
+            requestCard(
+              "Light Not Working",
+              "Room C-07",
+              "Completed",
+              Colors.green,
             ),
 
             const SizedBox(height: 30),
@@ -72,7 +95,6 @@ class ManagerDashboard extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-
                     MaterialPageRoute(
                       builder: (context) => const TaskManagementScreen(),
                     ),
@@ -90,7 +112,14 @@ class ManagerDashboard extends StatelessWidget {
               height: 50,
 
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CommunicationScreen(),
+                    ),
+                  );
+                },
 
                 child: const Text("Communication"),
               ),
@@ -109,6 +138,55 @@ class ManagerDashboard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget dashboardBox(String number, String title) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+
+        borderRadius: BorderRadius.circular(12),
+      ),
+
+      child: Column(
+        children: [
+          Text(
+            number,
+
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(title),
+        ],
+      ),
+    );
+  }
+
+  Widget requestCard(
+    String title,
+    String room,
+    String status,
+    Color statusColor,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+
+      child: ListTile(
+        title: Text(title),
+
+        subtitle: Text(room),
+
+        trailing: Text(
+          status,
+
+          style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
         ),
       ),
     );
