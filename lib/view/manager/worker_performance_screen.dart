@@ -6,20 +6,66 @@ class WorkerPerformanceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Worker Performance")),
+      appBar: AppBar(
+        title: const Text("Worker Performance"),
+        centerTitle: true,
+      ),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
 
-        child: ListView(
+        child: Column(
           children: [
-            workerCard("John Tan", 15, 4.8, 90),
+            Row(
+              children: [
+                Expanded(child: summaryCard("4", "Workers")),
 
-            workerCard("Ahmed Ali", 12, 4.6, 85),
+                const SizedBox(width: 10),
 
-            workerCard("Mei Ling", 9, 4.5, 75),
+                Expanded(child: summaryCard("44", "Jobs Done")),
+              ],
+            ),
 
-            workerCard("Ravi Kumar", 8, 4.7, 80),
+            const SizedBox(height: 20),
+
+            Expanded(
+              child: ListView(
+                children: [
+                  workerCard("John Tan", 15, 4.8, 90),
+
+                  workerCard("Ahmed Ali", 12, 4.6, 85),
+
+                  workerCard("Mei Ling", 9, 4.5, 75),
+
+                  workerCard("Ravi Kumar", 8, 4.7, 80),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget summaryCard(String number, String title) {
+    return Card(
+      elevation: 3,
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+
+        child: Column(
+          children: [
+            Text(
+              number,
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 5),
+
+            Text(title),
           ],
         ),
       ),
@@ -33,7 +79,11 @@ class WorkerPerformanceScreen extends StatelessWidget {
     int performance,
   ) {
     return Card(
+      elevation: 3,
+
       margin: const EdgeInsets.only(bottom: 12),
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -62,6 +112,16 @@ class WorkerPerformanceScreen extends StatelessWidget {
                   Text("Jobs Completed: $jobsCompleted"),
 
                   Text("Rating: $rating ★"),
+
+                  const SizedBox(height: 5),
+
+                  const Text(
+                    "Available",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
