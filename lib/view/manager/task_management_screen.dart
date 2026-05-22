@@ -8,10 +8,14 @@ class TaskManagementScreen extends StatefulWidget {
 }
 
 class _TaskManagementScreenState extends State<TaskManagementScreen> {
-  bool task1 = true;
-  bool task2 = false;
-  bool task3 = true;
-  bool task4 = false;
+  final TextEditingController taskController = TextEditingController();
+
+  List<Map<String, dynamic>> tasks = [
+    {"title": "Follow up with technician", "completed": true},
+    {"title": "Prepare monthly report", "completed": false},
+    {"title": "Check rent collection", "completed": true},
+    {"title": "Inspect common area", "completed": false},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -23,46 +27,64 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
 
         child: Column(
           children: [
-            taskCard("Follow up with technician", task1, (value) {
-              setState(() {
-                task1 = value!;
-              });
-            }),
+            TextField(
+              controller: taskController,
 
-            taskCard("Prepare monthly report", task2, (value) {
-              setState(() {
-                task2 = value!;
-              });
-            }),
+              decoration: InputDecoration(
+                hintText: "Enter new task",
+                prefixIcon: const Icon(Icons.task),
 
-            taskCard("Check rent collection", task3, (value) {
-              setState(() {
-                task3 = value!;
-              });
-            }),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
 
-            taskCard("Inspect common area", task4, (value) {
-              setState(() {
-                task4 = value!;
-              });
-            }),
+            const SizedBox(height: 15),
 
-            const Spacer(),
+            Expanded(
+              child: ListView.builder(
+                itemCount: tasks.length,
+
+                itemBuilder: (context, index) {
+                  return taskCard(
+                    tasks[index]["title"],
+                    tasks[index]["completed"],
+                    (value) {
+                      setState(() {
+                        tasks[index]["completed"] = value;
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
 
             SizedBox(
               width: double.infinity,
               height: 50,
 
               child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("New Task Added")),
-                  );
-                },
-
                 icon: const Icon(Icons.add),
 
                 label: const Text("Add Task"),
+
+                onPressed: () {
+                  if (taskController.text.trim().isNotEmpty) {
+                    setState(() {
+                      tasks.add({
+                        "title": taskController.text.trim(),
+                        "completed": false,
+                      });
+                    });
+
+                    taskController.clear();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Task Added Successfully")),
+                    );
+                  }
+                },
               ),
             ),
           ],
@@ -84,7 +106,16 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
 
         onChanged: onChanged,
 
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+
+            decoration: value
+                ? TextDecoration.lineThrough
+                : TextDecoration.none,
+          ),
+        ),
       ),
     );
   }
