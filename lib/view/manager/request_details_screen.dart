@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 
 class RequestDetailsScreen extends StatefulWidget {
-  const RequestDetailsScreen({super.key});
+  final String currentStatus;
+
+  const RequestDetailsScreen({super.key, required this.currentStatus});
 
   @override
   State<RequestDetailsScreen> createState() => _RequestDetailsScreenState();
 }
 
 class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
-  String currentStatus = "In Progress";
+  late String currentStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    currentStatus = widget.currentStatus;
+  }
 
   final TextEditingController notesController = TextEditingController(
     text: "Technician is on the way.",
@@ -99,11 +107,7 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
 
               child: ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Status Updated Successfully"),
-                    ),
-                  );
+                  Navigator.pop(context, currentStatus);
                 },
 
                 child: const Text("Update Status"),

@@ -183,7 +183,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const RequestDetailsScreen()),
+            MaterialPageRoute(
+              builder: (_) => RequestDetailsScreen(currentStatus: status),
+            ),
           );
         },
 
