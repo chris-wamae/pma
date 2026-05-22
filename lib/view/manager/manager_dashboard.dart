@@ -8,6 +8,7 @@ import 'package:pma/view/manager/complaints_screen.dart';
 import 'package:pma/view/manager/assign_worker_screen.dart';
 import 'package:pma/view/manager/upload_files_screen.dart';
 import 'package:pma/view/manager/request_classification_screen.dart';
+import 'package:pma/view/manager/utility_bills_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -156,6 +157,13 @@ class ManagerDashboard extends StatelessWidget {
               "Request Classification",
               Icons.category,
               const RequestClassificationScreen(),
+            ),
+
+            functionCard(
+              context,
+              "Shared Utility Bills",
+              Icons.receipt_long,
+              const UtilityBillsScreen(),
             ),
           ],
         ),
