@@ -10,6 +10,7 @@ import 'package:pma/view/manager/upload_files_screen.dart';
 import 'package:pma/view/manager/request_classification_screen.dart';
 import 'package:pma/view/manager/utility_bills_screen.dart';
 import 'package:pma/view/manager/tenant_management_screen.dart';
+import 'package:pma/view/manager/property_rating_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -172,6 +173,13 @@ class ManagerDashboard extends StatelessWidget {
               "Tenant Management",
               Icons.people_alt,
               const TenantManagementScreen(),
+            ),
+
+            functionCard(
+              context,
+              "Property Satisfaction",
+              Icons.star,
+              const PropertyRatingScreen(),
             ),
           ],
         ),
