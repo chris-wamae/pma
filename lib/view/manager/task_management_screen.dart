@@ -10,12 +10,51 @@ class TaskManagementScreen extends StatefulWidget {
 class _TaskManagementScreenState extends State<TaskManagementScreen> {
   final TextEditingController taskController = TextEditingController();
 
+  String selectedWorker = "John Tan";
+  String selectedPriority = "Medium";
+
   List<Map<String, dynamic>> tasks = [
-    {"title": "Follow up with technician", "completed": true},
-    {"title": "Prepare monthly report", "completed": false},
-    {"title": "Check rent collection", "completed": true},
-    {"title": "Inspect common area", "completed": false},
+    {
+      "title": "Follow up with technician",
+      "worker": "John Tan",
+      "priority": "High",
+      "completed": true,
+    },
+    {
+      "title": "Prepare monthly report",
+      "worker": "Manager",
+      "priority": "Medium",
+      "completed": false,
+    },
+    {
+      "title": "Check rent collection",
+      "worker": "Admin",
+      "priority": "Low",
+      "completed": true,
+    },
+    {
+      "title": "Inspect common area",
+      "worker": "Ahmed Ali",
+      "priority": "Medium",
+      "completed": false,
+    },
   ];
+
+  Color getPriorityColor(String priority) {
+    switch (priority) {
+      case "High":
+        return Colors.red;
+
+      case "Medium":
+        return Colors.orange;
+
+      case "Low":
+        return Colors.green;
+
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +79,56 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
               ),
             ),
 
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<String>(
+              value: selectedWorker,
+
+              decoration: const InputDecoration(
+                labelText: "Assign Worker",
+                border: OutlineInputBorder(),
+              ),
+
+              items: const [
+                DropdownMenuItem(value: "John Tan", child: Text("John Tan")),
+                DropdownMenuItem(value: "Ahmed Ali", child: Text("Ahmed Ali")),
+                DropdownMenuItem(value: "Mei Ling", child: Text("Mei Ling")),
+                DropdownMenuItem(
+                  value: "Ravi Kumar",
+                  child: Text("Ravi Kumar"),
+                ),
+              ],
+
+              onChanged: (value) {
+                setState(() {
+                  selectedWorker = value!;
+                });
+              },
+            ),
+
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<String>(
+              value: selectedPriority,
+
+              decoration: const InputDecoration(
+                labelText: "Priority",
+                border: OutlineInputBorder(),
+              ),
+
+              items: const [
+                DropdownMenuItem(value: "High", child: Text("High")),
+                DropdownMenuItem(value: "Medium", child: Text("Medium")),
+                DropdownMenuItem(value: "Low", child: Text("Low")),
+              ],
+
+              onChanged: (value) {
+                setState(() {
+                  selectedPriority = value!;
+                });
+              },
+            ),
+
             const SizedBox(height: 15),
 
             Expanded(
@@ -49,6 +138,8 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
                 itemBuilder: (context, index) {
                   return taskCard(
                     tasks[index]["title"],
+                    tasks[index]["worker"],
+                    tasks[index]["priority"],
                     tasks[index]["completed"],
                     (value) {
                       setState(() {
@@ -74,6 +165,8 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
                     setState(() {
                       tasks.add({
                         "title": taskController.text.trim(),
+                        "worker": selectedWorker,
+                        "priority": selectedPriority,
                         "completed": false,
                       });
                     });
@@ -93,7 +186,13 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
     );
   }
 
-  Widget taskCard(String title, bool value, Function(bool?) onChanged) {
+  Widget taskCard(
+    String title,
+    String worker,
+    String priority,
+    bool value,
+    Function(bool?) onChanged,
+  ) {
     return Card(
       elevation: 3,
 
@@ -106,15 +205,36 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
 
         onChanged: onChanged,
 
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-            decoration: value
-                ? TextDecoration.lineThrough
-                : TextDecoration.none,
-          ),
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+
+                decoration: value
+                    ? TextDecoration.lineThrough
+                    : TextDecoration.none,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text("Assigned: $worker", style: const TextStyle(fontSize: 12)),
+
+            const SizedBox(height: 2),
+
+            Text(
+              "Priority: $priority",
+              style: TextStyle(
+                color: getPriorityColor(priority),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );
