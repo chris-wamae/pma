@@ -12,6 +12,7 @@ import 'package:pma/view/manager/utility_bills_screen.dart';
 import 'package:pma/view/manager/tenant_management_screen.dart';
 import 'package:pma/view/manager/property_rating_screen.dart';
 import 'package:pma/view/manager/priority_requests_screen.dart';
+import 'package:pma/view/manager/rent_collection_screen.dart';
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
@@ -276,6 +277,13 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               "Property Satisfaction",
               Icons.star,
               const PropertyRatingScreen(),
+            ),
+
+            functionCard(
+              context,
+              "Rent Collection Status",
+              Icons.payments,
+              const RentCollectionScreen(),
             ),
           ],
         ),
