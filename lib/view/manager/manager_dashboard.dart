@@ -12,8 +12,36 @@ import 'package:pma/view/manager/utility_bills_screen.dart';
 import 'package:pma/view/manager/tenant_management_screen.dart';
 import 'package:pma/view/manager/property_rating_screen.dart';
 
-class ManagerDashboard extends StatelessWidget {
+class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
+
+  @override
+  State<ManagerDashboard> createState() => _ManagerDashboardState();
+}
+
+class _ManagerDashboardState extends State<ManagerDashboard> {
+  final List<Map<String, dynamic>> requests = [
+    {"title": "Leaking Pipe", "status": "Urgent"},
+
+    {"title": "Broken Aircond", "status": "In Progress"},
+
+    {"title": "Light Not Working", "status": "Completed"},
+
+    {"title": "Water Heater", "status": "Urgent"},
+
+    {"title": "Door Lock Broken", "status": "Completed"},
+  ];
+
+  int get totalRequests => requests.length;
+
+  int get completedRequests =>
+      requests.where((r) => r["status"] == "Completed").length;
+
+  int get urgentRequests =>
+      requests.where((r) => r["status"] == "Urgent").length;
+
+  int get inProgressRequests =>
+      requests.where((r) => r["status"] == "In Progress").length;
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +61,21 @@ class ManagerDashboard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: dashboardBox("24", "Total Requests", Colors.blue),
+                  child: dashboardBox(
+                    totalRequests.toString(),
+                    "Total Requests",
+                    Colors.blue,
+                  ),
                 ),
 
                 const SizedBox(width: 10),
 
                 Expanded(
-                  child: dashboardBox("10", "In Progress", Colors.orange),
+                  child: dashboardBox(
+                    inProgressRequests.toString(),
+                    "In Progress",
+                    Colors.orange,
+                  ),
                 ),
               ],
             ),
@@ -48,11 +84,23 @@ class ManagerDashboard extends StatelessWidget {
 
             Row(
               children: [
-                Expanded(child: dashboardBox("12", "Completed", Colors.green)),
+                Expanded(
+                  child: dashboardBox(
+                    completedRequests.toString(),
+                    "Completed",
+                    Colors.green,
+                  ),
+                ),
 
                 const SizedBox(width: 10),
 
-                Expanded(child: dashboardBox("5", "Urgent", Colors.red)),
+                Expanded(
+                  child: dashboardBox(
+                    urgentRequests.toString(),
+                    "Urgent",
+                    Colors.red,
+                  ),
+                ),
               ],
             ),
 
