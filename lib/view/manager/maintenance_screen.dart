@@ -180,13 +180,27 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
       child: ListTile(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final updatedStatus = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => RequestDetailsScreen(currentStatus: status),
             ),
           );
+
+          if (updatedStatus != null) {
+            setState(() {
+              if (title == "Leaking Pipe in Kitchen") {
+                pipeStatus = updatedStatus;
+              } else if (title == "Aircon Not Working") {
+                aircondStatus = updatedStatus;
+              } else if (title == "Door Lock Broken") {
+                doorStatus = updatedStatus;
+              } else if (title == "Water Heater Not Working") {
+                heaterStatus = updatedStatus;
+              }
+            });
+          }
         },
 
         leading: const Icon(Icons.build),
