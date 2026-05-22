@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pma/view/manager/request_details_screen.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen({super.key});
@@ -152,15 +153,16 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
       child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const RequestDetailsScreen()),
+          );
+        },
+
         leading: const Icon(Icons.build),
 
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [Text(unit), Text(worker)],
-        ),
 
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

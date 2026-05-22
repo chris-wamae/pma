@@ -7,7 +7,7 @@ class PropertyRatingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Property Satisfaction Rating"),
+        title: const Text("Property Satisfaction"),
         centerTitle: true,
       ),
 
@@ -16,33 +16,36 @@ class PropertyRatingScreen extends StatelessWidget {
 
         child: ListView(
           children: [
-            Card(
-              elevation: 3,
+            buildRatingCard("Block A", 4.8, "Excellent", Colors.green),
 
+            buildRatingCard("Block B", 4.5, "Very Good", Colors.blue),
+
+            buildRatingCard("Block C", 4.1, "Good", Colors.orange),
+
+            buildRatingCard("Block D", 3.7, "Average", Colors.red),
+
+            const SizedBox(height: 20),
+
+            Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
 
                 child: Column(
-                  children: [
-                    const Text(
+                  children: const [
+                    Text(
                       "Overall Rating",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
 
-                    const Text(
-                      "★★★★☆",
-                      style: TextStyle(fontSize: 40, color: Colors.amber),
-                    ),
-
-                    const Text(
-                      "4.5 / 5.0",
+                    Text(
+                      "4.3 / 5.0",
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -50,36 +53,38 @@ class PropertyRatingScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            ratingCard("Maintenance Service", 4.7),
-
-            ratingCard("Security", 4.5),
-
-            ratingCard("Cleanliness", 4.4),
-
-            ratingCard("Facilities", 4.3),
           ],
         ),
       ),
     );
   }
 
-  Widget ratingCard(String title, double rating) {
+  Widget buildRatingCard(
+    String property,
+    double rating,
+    String level,
+    Color color,
+  ) {
     return Card(
-      elevation: 3,
-
       margin: const EdgeInsets.only(bottom: 12),
 
       child: ListTile(
-        leading: const Icon(Icons.star, color: Colors.amber),
+        leading: const Icon(Icons.apartment),
 
-        title: Text(title),
+        title: Text(
+          property,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+
+        subtitle: Text(level),
 
         trailing: Text(
-          rating.toString(),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          "$rating ★",
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
     );
