@@ -58,6 +58,42 @@ class ManagerDashboard extends StatelessWidget {
 
             const SizedBox(height: 25),
 
+            Card(
+              elevation: 3,
+              color: Colors.orange.shade50,
+
+              child: const ListTile(
+                leading: Icon(Icons.warning_amber, color: Colors.orange),
+
+                title: Text(
+                  "Urgent Alerts",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                subtitle: Text("3 urgent requests require attention"),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            Card(
+              elevation: 3,
+              color: Colors.red.shade50,
+
+              child: const ListTile(
+                leading: Icon(Icons.report_problem, color: Colors.red),
+
+                title: Text(
+                  "Open Complaints",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                subtitle: Text("2 complaints unresolved"),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
