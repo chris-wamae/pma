@@ -9,6 +9,7 @@ import 'package:pma/view/manager/assign_worker_screen.dart';
 import 'package:pma/view/manager/upload_files_screen.dart';
 import 'package:pma/view/manager/request_classification_screen.dart';
 import 'package:pma/view/manager/utility_bills_screen.dart';
+import 'package:pma/view/manager/tenant_management_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -164,6 +165,13 @@ class ManagerDashboard extends StatelessWidget {
               "Shared Utility Bills",
               Icons.receipt_long,
               const UtilityBillsScreen(),
+            ),
+
+            functionCard(
+              context,
+              "Tenant Management",
+              Icons.people_alt,
+              const TenantManagementScreen(),
             ),
           ],
         ),
