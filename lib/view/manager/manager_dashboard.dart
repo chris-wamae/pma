@@ -6,6 +6,8 @@ import 'package:pma/view/manager/worker_performance_screen.dart';
 import 'package:pma/view/manager/schedule_repair_screen.dart';
 import 'package:pma/view/manager/complaints_screen.dart';
 import 'package:pma/view/manager/assign_worker_screen.dart';
+import 'package:pma/view/manager/upload_files_screen.dart';
+import 'package:pma/view/manager/request_classification_screen.dart';
 
 class ManagerDashboard extends StatelessWidget {
   const ManagerDashboard({super.key});
@@ -15,7 +17,7 @@ class ManagerDashboard extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Maintenance Dashboard"),
-        centerTitle: false,
+        centerTitle: true,
       ),
 
       body: SingleChildScrollView(
@@ -25,14 +27,17 @@ class ManagerDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-            // Statistics
             Row(
               children: [
-                Expanded(child: dashboardBox("24", "Total Requests")),
+                Expanded(
+                  child: dashboardBox("24", "Total Requests", Colors.blue),
+                ),
 
                 const SizedBox(width: 10),
 
-                Expanded(child: dashboardBox("10", "In Progress")),
+                Expanded(
+                  child: dashboardBox("10", "In Progress", Colors.orange),
+                ),
               ],
             ),
 
@@ -40,11 +45,11 @@ class ManagerDashboard extends StatelessWidget {
 
             Row(
               children: [
-                Expanded(child: dashboardBox("12", "Completed")),
+                Expanded(child: dashboardBox("12", "Completed", Colors.green)),
 
                 const SizedBox(width: 10),
 
-                Expanded(child: dashboardBox("5", "Urgent")),
+                Expanded(child: dashboardBox("5", "Urgent", Colors.red)),
               ],
             ),
 
@@ -52,6 +57,7 @@ class ManagerDashboard extends StatelessWidget {
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
               children: [
                 const Text(
                   "Recent Requests",
@@ -137,18 +143,33 @@ class ManagerDashboard extends StatelessWidget {
               Icons.report_problem,
               const ComplaintsScreen(),
             ),
+
+            functionCard(
+              context,
+              "Upload Files",
+              Icons.upload_file,
+              const UploadFilesScreen(),
+            ),
+
+            functionCard(
+              context,
+              "Request Classification",
+              Icons.category,
+              const RequestClassificationScreen(),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget dashboardBox(String number, String title) {
+  Widget dashboardBox(String number, String title, Color color) {
     return Container(
       height: 120,
 
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade400),
+
         borderRadius: BorderRadius.circular(12),
       ),
 
@@ -158,7 +179,11 @@ class ManagerDashboard extends StatelessWidget {
         children: [
           Text(
             number,
-            style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
 
           const SizedBox(height: 10),
@@ -171,9 +196,15 @@ class ManagerDashboard extends StatelessWidget {
 
   Widget requestCard(String title, String room, String status, Color color) {
     return Card(
+      elevation: 3,
+
       margin: const EdgeInsets.only(bottom: 10),
 
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
       child: ListTile(
+        leading: const Icon(Icons.build),
+
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
 
         subtitle: Text(room),
@@ -193,7 +224,11 @@ class ManagerDashboard extends StatelessWidget {
     Widget? screen,
   ) {
     return Card(
+      elevation: 3,
+
       margin: const EdgeInsets.only(bottom: 10),
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
       child: ListTile(
         leading: Icon(icon),
