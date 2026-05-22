@@ -13,6 +13,10 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String doorStatus = "Completed";
   String heaterStatus = "Completed";
 
+  String selectedFilter = "All";
+
+  final TextEditingController searchController = TextEditingController();
+
   Color getStatusColor(String status) {
     switch (status) {
       case "Pending":
@@ -40,37 +44,96 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
 
-        child: ListView(
+        child: Column(
           children: [
-            buildRequestCard(
-              title: "Leaking Pipe in Kitchen",
-              unit: "Unit A-3-1",
-              worker: "John Tan",
-              status: pipeStatus,
+            TextField(
+              controller: searchController,
+
+              decoration: InputDecoration(
+                hintText: "Search request...",
+                prefixIcon: const Icon(Icons.search),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
             ),
 
-            buildRequestCard(
-              title: "Aircon Not Working",
-              unit: "Unit B-2-4",
-              worker: "Ahmed Ali",
-              status: aircondStatus,
+            const SizedBox(height: 15),
+
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+
+              child: Row(
+                children: [
+                  filterButton("All"),
+
+                  filterButton("Pending"),
+
+                  filterButton("In Progress"),
+
+                  filterButton("Completed"),
+
+                  filterButton("Urgent"),
+                ],
+              ),
             ),
 
-            buildRequestCard(
-              title: "Door Lock Broken",
-              unit: "Unit C-1-2",
-              worker: "Mei Ling",
-              status: doorStatus,
-            ),
+            const SizedBox(height: 15),
 
-            buildRequestCard(
-              title: "Water Heater Not Working",
-              unit: "Unit A-1-3",
-              worker: "Ravi Kumar",
-              status: heaterStatus,
+            Expanded(
+              child: ListView(
+                children: [
+                  buildRequestCard(
+                    title: "Leaking Pipe in Kitchen",
+                    unit: "Unit A-3-1",
+                    worker: "John Tan",
+                    status: pipeStatus,
+                  ),
+
+                  buildRequestCard(
+                    title: "Aircon Not Working",
+                    unit: "Unit B-2-4",
+                    worker: "Ahmed Ali",
+                    status: aircondStatus,
+                  ),
+
+                  buildRequestCard(
+                    title: "Door Lock Broken",
+                    unit: "Unit C-1-2",
+                    worker: "Mei Ling",
+                    status: doorStatus,
+                  ),
+
+                  buildRequestCard(
+                    title: "Water Heater Not Working",
+                    unit: "Unit A-1-3",
+                    worker: "Ravi Kumar",
+                    status: heaterStatus,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget filterButton(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+
+      child: ChoiceChip(
+        label: Text(text),
+
+        selected: selectedFilter == text,
+
+        onSelected: (value) {
+          setState(() {
+            selectedFilter = text;
+          });
+        },
       ),
     );
   }
