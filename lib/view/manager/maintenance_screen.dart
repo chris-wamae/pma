@@ -16,6 +16,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
   String selectedFilter = "All";
 
+  String searchText = "";
+
   final TextEditingController searchController = TextEditingController();
 
   Color getStatusColor(String status) {
@@ -58,6 +60,11 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
+              onChanged: (value) {
+                setState(() {
+                  searchText = value.toLowerCase();
+                });
+              },
             ),
 
             const SizedBox(height: 15),
@@ -85,33 +92,45 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  buildRequestCard(
-                    title: "Leaking Pipe in Kitchen",
-                    unit: "Unit A-3-1",
-                    worker: "John Tan",
-                    status: pipeStatus,
-                  ),
+                  if ("Leaking Pipe in Kitchen".toLowerCase().contains(
+                        searchText,
+                      ) &&
+                      shouldShow(pipeStatus))
+                    buildRequestCard(
+                      title: "Leaking Pipe in Kitchen",
+                      unit: "Unit A-3-1",
+                      worker: "John Tan",
+                      status: pipeStatus,
+                    ),
 
-                  buildRequestCard(
-                    title: "Aircon Not Working",
-                    unit: "Unit B-2-4",
-                    worker: "Ahmed Ali",
-                    status: aircondStatus,
-                  ),
+                  if ("Aircon Not Working".toLowerCase().contains(searchText) &&
+                      shouldShow(aircondStatus))
+                    buildRequestCard(
+                      title: "Aircon Not Working",
+                      unit: "Unit B-2-4",
+                      worker: "Ahmed Ali",
+                      status: aircondStatus,
+                    ),
 
-                  buildRequestCard(
-                    title: "Door Lock Broken",
-                    unit: "Unit C-1-2",
-                    worker: "Mei Ling",
-                    status: doorStatus,
-                  ),
+                  if ("Door Lock Broken".toLowerCase().contains(searchText) &&
+                      shouldShow(doorStatus))
+                    buildRequestCard(
+                      title: "Door Lock Broken",
+                      unit: "Unit C-1-2",
+                      worker: "Mei Ling",
+                      status: doorStatus,
+                    ),
 
-                  buildRequestCard(
-                    title: "Water Heater Not Working",
-                    unit: "Unit A-1-3",
-                    worker: "Ravi Kumar",
-                    status: heaterStatus,
-                  ),
+                  if ("Water Heater Not Working".toLowerCase().contains(
+                        searchText,
+                      ) &&
+                      shouldShow(heaterStatus))
+                    buildRequestCard(
+                      title: "Water Heater Not Working",
+                      unit: "Unit A-1-3",
+                      worker: "Ravi Kumar",
+                      status: heaterStatus,
+                    ),
                 ],
               ),
             ),
@@ -137,6 +156,14 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         },
       ),
     );
+  }
+
+  bool shouldShow(String status) {
+    if (selectedFilter == "All") {
+      return true;
+    }
+
+    return selectedFilter == status;
   }
 
   Widget buildRequestCard({
