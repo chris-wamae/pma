@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pma/view/manager/request_details_screen.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen({super.key});
@@ -8,144 +9,206 @@ class MaintenanceScreen extends StatefulWidget {
 }
 
 class _MaintenanceScreenState extends State<MaintenanceScreen> {
-  String pipeStatus = "Pending";
-  String aircondStatus = "Urgent";
-  String lightStatus = "In Progress";
+  String pipeStatus = "In Progress";
+  String aircondStatus = "In Progress";
+  String doorStatus = "Completed";
+  String heaterStatus = "Completed";
+
+  String selectedFilter = "All";
+
+  String searchText = "";
+
+  final TextEditingController searchController = TextEditingController();
 
   Color getStatusColor(String status) {
-    if (status == "Pending") {
-      return Colors.orange;
-    } else if (status == "Urgent") {
-      return Colors.red;
-    } else if (status == "In Progress") {
-      return Colors.blue;
-    } else {
-      return Colors.green;
+    switch (status) {
+      case "Pending":
+        return Colors.orange;
+
+      case "In Progress":
+        return Colors.blue;
+
+      case "Completed":
+        return Colors.green;
+
+      case "Urgent":
+        return Colors.red;
+
+      default:
+        return Colors.black;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Maintenance Requests")),
+      appBar: AppBar(title: const Text("Work Progress"), centerTitle: true),
 
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            // Leaking Pipe
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.plumbing, color: Colors.blue),
+            TextField(
+              controller: searchController,
 
-                title: const Text("Leaking Pipe"),
+              decoration: InputDecoration(
+                hintText: "Search request...",
+                prefixIcon: const Icon(Icons.search),
 
-                subtitle: const Text("Room A-12"),
-
-                trailing: Text(
-                  pipeStatus,
-
-                  style: TextStyle(
-                    color: getStatusColor(pipeStatus),
-                    fontWeight: FontWeight.bold,
-                  ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  searchText = value.toLowerCase();
+                });
+              },
+            ),
+
+            const SizedBox(height: 15),
+
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+
+              child: Row(
+                children: [
+                  filterButton("All"),
+
+                  filterButton("Pending"),
+
+                  filterButton("In Progress"),
+
+                  filterButton("Completed"),
+
+                  filterButton("Urgent"),
+                ],
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 15),
 
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  if (pipeStatus == "Pending") {
-                    pipeStatus = "Completed";
-                  } else {
-                    pipeStatus = "Pending";
-                  }
-                });
-              },
+            Expanded(
+              child: ListView(
+                children: [
+                  if ("Leaking Pipe in Kitchen".toLowerCase().contains(
+                        searchText,
+                      ) &&
+                      shouldShow(pipeStatus))
+                    buildRequestCard(
+                      title: "Leaking Pipe in Kitchen",
+                      unit: "Unit A-3-1",
+                      worker: "John Tan",
+                      status: pipeStatus,
+                    ),
 
-              child: const Text("Update Pipe Status"),
-            ),
+                  if ("Aircon Not Working".toLowerCase().contains(searchText) &&
+                      shouldShow(aircondStatus))
+                    buildRequestCard(
+                      title: "Aircon Not Working",
+                      unit: "Unit B-2-4",
+                      worker: "Ahmed Ali",
+                      status: aircondStatus,
+                    ),
 
-            const SizedBox(height: 25),
+                  if ("Door Lock Broken".toLowerCase().contains(searchText) &&
+                      shouldShow(doorStatus))
+                    buildRequestCard(
+                      title: "Door Lock Broken",
+                      unit: "Unit C-1-2",
+                      worker: "Mei Ling",
+                      status: doorStatus,
+                    ),
 
-            // Broken Aircond
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.ac_unit, color: Colors.cyan),
-
-                title: const Text("Broken Aircond"),
-
-                subtitle: const Text("Room B-03"),
-
-                trailing: Text(
-                  aircondStatus,
-
-                  style: TextStyle(
-                    color: getStatusColor(aircondStatus),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                  if ("Water Heater Not Working".toLowerCase().contains(
+                        searchText,
+                      ) &&
+                      shouldShow(heaterStatus))
+                    buildRequestCard(
+                      title: "Water Heater Not Working",
+                      unit: "Unit A-1-3",
+                      worker: "Ravi Kumar",
+                      status: heaterStatus,
+                    ),
+                ],
               ),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  if (aircondStatus == "Urgent") {
-                    aircondStatus = "Completed";
-                  } else {
-                    aircondStatus = "Urgent";
-                  }
-                });
-              },
-
-              child: const Text("Update Aircond Status"),
-            ),
-
-            const SizedBox(height: 25),
-
-            // Light Issue
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.lightbulb, color: Colors.amber),
-
-                title: const Text("Light Not Working"),
-
-                subtitle: const Text("Room C-07"),
-
-                trailing: Text(
-                  lightStatus,
-
-                  style: TextStyle(
-                    color: getStatusColor(lightStatus),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  if (lightStatus == "In Progress") {
-                    lightStatus = "Completed";
-                  } else {
-                    lightStatus = "In Progress";
-                  }
-                });
-              },
-
-              child: const Text("Update Light Status"),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget filterButton(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+
+      child: ChoiceChip(
+        label: Text(text),
+
+        selected: selectedFilter == text,
+
+        onSelected: (value) {
+          setState(() {
+            selectedFilter = text;
+          });
+        },
+      ),
+    );
+  }
+
+  bool shouldShow(String status) {
+    if (selectedFilter == "All") {
+      return true;
+    }
+
+    return selectedFilter == status;
+  }
+
+  Widget buildRequestCard({
+    required String title,
+    required String unit,
+    required String worker,
+    required String status,
+  }) {
+    return Card(
+      elevation: 3,
+
+      margin: const EdgeInsets.only(bottom: 12),
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+      child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RequestDetailsScreen(currentStatus: status),
+            ),
+          );
+        },
+
+        leading: const Icon(Icons.build),
+
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+
+          decoration: BoxDecoration(
+            color: getStatusColor(status).withOpacity(0.15),
+
+            borderRadius: BorderRadius.circular(8),
+          ),
+
+          child: Text(
+            status,
+            style: TextStyle(
+              color: getStatusColor(status),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );

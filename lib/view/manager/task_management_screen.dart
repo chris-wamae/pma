@@ -8,145 +8,83 @@ class TaskManagementScreen extends StatefulWidget {
 }
 
 class _TaskManagementScreenState extends State<TaskManagementScreen> {
-  String elevatorStatus = "Pending";
-  String technicianStatus = "Completed";
-  String inspectionStatus = "In Progress";
-
-  Color getStatusColor(String status) {
-    if (status == "Pending") {
-      return Colors.orange;
-    } else if (status == "Completed") {
-      return Colors.green;
-    } else {
-      return Colors.blue;
-    }
-  }
+  bool task1 = true;
+  bool task2 = false;
+  bool task3 = true;
+  bool task4 = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Task Management")),
+      appBar: AppBar(title: const Text("Task Management"), centerTitle: true),
 
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            // Elevator Task
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.elevator, color: Colors.grey),
+            taskCard("Follow up with technician", task1, (value) {
+              setState(() {
+                task1 = value!;
+              });
+            }),
 
-                title: const Text("Repair Elevator"),
+            taskCard("Prepare monthly report", task2, (value) {
+              setState(() {
+                task2 = value!;
+              });
+            }),
 
-                subtitle: const Text("Technician: John"),
+            taskCard("Check rent collection", task3, (value) {
+              setState(() {
+                task3 = value!;
+              });
+            }),
 
-                trailing: Text(
-                  elevatorStatus,
+            taskCard("Inspect common area", task4, (value) {
+              setState(() {
+                task4 = value!;
+              });
+            }),
 
-                  style: TextStyle(
-                    color: getStatusColor(elevatorStatus),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            const Spacer(),
+
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("New Task Added")),
+                  );
+                },
+
+                icon: const Icon(Icons.add),
+
+                label: const Text("Add Task"),
               ),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  if (elevatorStatus == "Pending") {
-                    elevatorStatus = "Completed";
-                  } else {
-                    elevatorStatus = "Pending";
-                  }
-                });
-              },
-
-              child: const Text("Update Elevator Task"),
-            ),
-
-            const SizedBox(height: 25),
-
-            // Technician Task
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.person, color: Colors.purple),
-
-                title: const Text("Contact Technician"),
-
-                subtitle: const Text("Technician: Alex"),
-
-                trailing: Text(
-                  technicianStatus,
-
-                  style: TextStyle(
-                    color: getStatusColor(technicianStatus),
-
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  if (technicianStatus == "Completed") {
-                    technicianStatus = "Pending";
-                  } else {
-                    technicianStatus = "Completed";
-                  }
-                });
-              },
-
-              child: const Text("Update Technician Task"),
-            ),
-
-            const SizedBox(height: 25),
-
-            // Inspection Task
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.search, color: Colors.teal),
-
-                title: const Text("Inspect Water Leak"),
-
-                subtitle: const Text("Technician: Kevin"),
-
-                trailing: Text(
-                  inspectionStatus,
-
-                  style: TextStyle(
-                    color: getStatusColor(inspectionStatus),
-
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  if (inspectionStatus == "In Progress") {
-                    inspectionStatus = "Completed";
-                  } else {
-                    inspectionStatus = "In Progress";
-                  }
-                });
-              },
-
-              child: const Text("Update Inspection Task"),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget taskCard(String title, bool value, Function(bool?) onChanged) {
+    return Card(
+      elevation: 3,
+
+      margin: const EdgeInsets.only(bottom: 12),
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+      child: CheckboxListTile(
+        value: value,
+
+        onChanged: onChanged,
+
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
