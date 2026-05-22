@@ -1,47 +1,81 @@
 import 'package:flutter/material.dart';
+import '../../model/MessageModel.dart';
 
-class MessagingScreen extends StatelessWidget {
+class MessagingScreen extends StatefulWidget {
+  // 從 StatelessWidget 改成 StatefulWidget
   const MessagingScreen({super.key});
+
+  @override
+  State<MessagingScreen> createState() => _MessagingScreenState();
+}
+
+class _MessagingScreenState extends State<MessagingScreen> {
+  // 1. 定義控制器，用來拿輸入框的字
+  final TextEditingController _controller = TextEditingController();
+
+  // 2. 把 dummyMessages 搬進 State，這樣它才能被修改
+  final List<MessageModel> _messages = [
+    MessageModel(
+      senderId: 'admin',
+      text: "Hello! I have a question about my utility bill.",
+      timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
+    ),
+    MessageModel(
+      senderId: 'tenant',
+      text: "Sure, let me check that for you. Which month?",
+      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+    ),
+  ];
+
+  // 3. 發送訊息的邏輯
+  void _sendMessage() {
+    if (_controller.text.trim().isEmpty) return; // 如果沒打字，不准發送
+
+    setState(() {
+      _messages.add(
+        MessageModel(
+          senderId: 'tenant',
+          text: _controller.text,
+          timestamp: DateTime.now(),
+        ),
+      );
+    });
+    _controller.clear(); // 發完後清空輸入框
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text("Manager Chat"),
         backgroundColor: const Color(0xFF0A4E9A),
       ),
       body: Column(
         children: [
-          // 聊天訊息區域
           Expanded(
-            child: ListView(
+            child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              children: [
-                _buildChatBubble(
-                  "Hello! I have a question about my utility bill.",
-                  true,
-                ),
-                _buildChatBubble(
-                  "Sure, let me check that for you. Which month?",
-                  false,
-                ),
-                _buildChatBubble(
-                  "It's for the May invoice. The RM 250 one.",
-                  true,
-                ),
-              ],
+              itemCount: _messages.length, // 使用 _messages 列表
+              itemBuilder: (context, index) {
+                final msg = _messages[index];
+                return _buildChatBubble(msg.text, msg.senderId == 'tenant');
+              },
             ),
           ),
 
-          // 底部輸入框
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            color: Colors.white,
+            decoration: BoxDecoration(color: Colors.white),
             child: Row(
               children: [
                 IconButton(icon: const Icon(Icons.photo), onPressed: () {}),
                 Expanded(
                   child: TextField(
+                    controller: _controller, // 綁定控制器
                     decoration: InputDecoration(
                       hintText: "Type a message...",
                       border: OutlineInputBorder(
@@ -55,7 +89,7 @@ class MessagingScreen extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.send, color: Color(0xFF0A4E9A)),
-                  onPressed: () {},
+                  onPressed: _sendMessage, // 點擊呼叫發送邏輯
                 ),
               ],
             ),
@@ -65,7 +99,6 @@ class MessagingScreen extends StatelessWidget {
     );
   }
 
-  // 聊天氣泡組件 (帶頭像升級版)
   Widget _buildChatBubble(String text, bool isMe) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -73,9 +106,8 @@ class MessagingScreen extends StatelessWidget {
         mainAxisAlignment: isMe
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end, // 讓頭像對齊氣泡底部
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // 1. 如果是管理員發的，左邊顯示頭像
           if (!isMe)
             const Padding(
               padding: EdgeInsets.only(right: 8.0),
@@ -86,8 +118,6 @@ class MessagingScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-          // 2. 氣泡本體
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -106,8 +136,6 @@ class MessagingScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // 3. 如果是租客(我)發的，右邊可以顯示自己的小圖標（選填）
           if (isMe)
             const Padding(
               padding: EdgeInsets.only(left: 8.0),
@@ -121,4 +149,4 @@ class MessagingScreen extends StatelessWidget {
       ),
     );
   }
-} // 這是 class 的結束括號，一定要有！
+}

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'view/manager/manager_dashboard.dart';
-import 'package:pma/view/Tanent/TanentDashboard.dart';
+import 'package:pma/view/Tanent/TenantDashboard.dart';
 
 void main() {
   runApp(const MyApp());

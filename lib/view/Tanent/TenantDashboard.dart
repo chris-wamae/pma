@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Messagingscreen.dart';
+import 'Maintanence.dart';
+import 'ReportPage.dart';
 
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
@@ -8,7 +10,6 @@ class TenantDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      // 1. 顶部栏 (还原草图中的 Logo 和 Profile Pic)
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A4E9A),
         elevation: 0,
@@ -40,14 +41,11 @@ class TenantDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 2. 租约信息卡 (Tenancy Info Box)
             _buildInfoCard("Tenancy Information", [
               "Tenancy Code: PMA-T-9921",
               "Tenancy Period: 2024 - 2025",
             ]),
             const SizedBox(height: 20),
-
-            // 3. 账单概览 (My Invoices Section)
             const Text(
               "My Invoices",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -95,8 +93,6 @@ class TenantDashboard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // 4. 快捷功能区 (Quick Actions 网格布局)
             const Text(
               "Quick Actions",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -110,27 +106,36 @@ class TenantDashboard extends StatelessWidget {
               mainAxisSpacing: 10,
               childAspectRatio: 2.5,
               children: [
-                _buildActionButton(Icons.build, "Maintenance"),
-                _buildActionButton(Icons.warning, "Report"),
-                _buildActionButton(Icons.description, "Documents"),
-                _buildActionButton(Icons.gavel, "House Rules"),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MessagingScreen(),
-                      ),
-                    );
-                  },
-                  child: _buildActionButton(Icons.message, "Messaging"),
-                ),
+                // 2. 这里的 Maintenance 现在可以点击跳转了
+                _buildActionButton(Icons.build, "Maintenance", () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MaintenancePage(),
+                    ),
+                  );
+                }),
+                _buildActionButton(Icons.warning, "Report", () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ReportPage()),
+                  );
+                }),
+                _buildActionButton(Icons.description, "Documents", () {}),
+                _buildActionButton(Icons.gavel, "House Rules", () {}),
+                _buildActionButton(Icons.message, "Messaging", () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MessagingScreen(),
+                    ),
+                  );
+                }),
               ],
             ),
           ],
         ),
       ),
-      // 5. 底部导航栏 (还原草图底部的 Home, Wallet, Tickets, Profile)
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF0A4E9A),
@@ -152,7 +157,6 @@ class TenantDashboard extends StatelessWidget {
     );
   }
 
-  // 信息卡辅助组件
   Widget _buildInfoCard(String title, List<String> lines) {
     return Container(
       width: double.infinity,
@@ -171,7 +175,6 @@ class TenantDashboard extends StatelessWidget {
     );
   }
 
-  // 账单统计辅助组件
   Widget _buildInvoiceStat(String label, String amount, Color color) {
     return Column(
       children: [
@@ -189,24 +192,27 @@ class TenantDashboard extends StatelessWidget {
     );
   }
 
-  // 按钮辅助组件
-  Widget _buildActionButton(IconData icon, String label) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: const Color(0xFF0A4E9A), size: 20),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-        ],
+  // 3. 我修改了这个辅助组件，让它支持点击事件 (onTap)
+  Widget _buildActionButton(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: const Color(0xFF0A4E9A), size: 20),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
       ),
     );
   }
