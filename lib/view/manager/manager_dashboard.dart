@@ -11,6 +11,7 @@ import 'package:pma/view/manager/request_classification_screen.dart';
 import 'package:pma/view/manager/utility_bills_screen.dart';
 import 'package:pma/view/manager/tenant_management_screen.dart';
 import 'package:pma/view/manager/property_rating_screen.dart';
+import 'package:pma/view/manager/priority_requests_screen.dart';
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
@@ -106,19 +107,30 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
             const SizedBox(height: 25),
 
-            Card(
-              elevation: 3,
-              color: Colors.orange.shade50,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PriorityRequestsScreen(),
+                  ),
+                );
+              },
 
-              child: const ListTile(
-                leading: Icon(Icons.warning_amber, color: Colors.orange),
+              child: Card(
+                elevation: 3,
+                color: Colors.orange.shade50,
 
-                title: Text(
-                  "Urgent Alerts",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: const ListTile(
+                  leading: Icon(Icons.warning_amber, color: Colors.orange),
+
+                  title: Text(
+                    "Urgent Alerts",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+
+                  subtitle: Text("3 urgent requests require attention"),
                 ),
-
-                subtitle: Text("3 urgent requests require attention"),
               ),
             ),
 
@@ -267,8 +279,30 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
             ),
           ],
         ),
+      ), // SingleChildScrollView
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        type: BottomNavigationBarType.fixed,
+
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.build),
+            label: 'Maintenance',
+          ),
+
+          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Tasks'),
+
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
+
+          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'More'),
+        ],
       ),
-    );
+    ); // Scaffold
   }
 
   Widget dashboardBox(String number, String title, Color color) {
