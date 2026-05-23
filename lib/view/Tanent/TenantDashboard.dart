@@ -4,6 +4,7 @@ import 'Maintanence.dart';
 import 'ReportPage.dart';
 import 'TicketPage.dart';
 import 'ProfilePage.dart';
+import 'InvoiceDetail.dart';
 
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
@@ -81,7 +82,15 @@ class TenantDashboard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            // 2. 跳转到账单详情页
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const InvoiceDetailPage(),
+                              ),
+                            );
+                          },
                           child: const Text("View Details"),
                         ),
                       ),
@@ -92,7 +101,15 @@ class TenantDashboard extends StatelessWidget {
                             backgroundColor: Colors.blue[900],
                             foregroundColor: Colors.white,
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            // 也可以跳转到支付详情
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const InvoiceDetailPage(),
+                              ),
+                            );
+                          },
                           child: const Text("Pay Now"),
                         ),
                       ),
@@ -182,7 +199,7 @@ class TenantDashboard extends StatelessWidget {
     );
   }
 
-  // --- 下面这些辅助函数必须在 TenantDashboard 类的花括号内 ---
+  // --- 辅助函数 ---
 
   Widget _buildInfoCard(String title, List<String> lines) {
     return Container(
