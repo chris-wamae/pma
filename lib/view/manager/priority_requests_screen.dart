@@ -20,16 +20,26 @@ class _PriorityRequestsScreenState extends State<PriorityRequestsScreen> {
 
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
 
-              children: [
-                filterButton("All"),
-                filterButton("Urgent"),
-                filterButton("High"),
-                filterButton("Normal"),
-                filterButton("Low"),
-              ],
+              child: Row(
+                children: [
+                  filterButton("All"),
+                  const SizedBox(width: 8),
+
+                  filterButton("Urgent"),
+                  const SizedBox(width: 8),
+
+                  filterButton("High"),
+                  const SizedBox(width: 8),
+
+                  filterButton("Normal"),
+                  const SizedBox(width: 8),
+
+                  filterButton("Low"),
+                ],
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -37,33 +47,53 @@ class _PriorityRequestsScreenState extends State<PriorityRequestsScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  requestCard(
-                    "Leaking Pipe in Kitchen",
-                    "Unit A-3-1",
-                    "Urgent",
-                    Colors.red,
-                  ),
+                  if (selectedFilter == "All" || selectedFilter == "Urgent")
+                    requestCard(
+                      "Leaking Pipe in Kitchen",
+                      "Unit A-3-1",
+                      "Urgent",
+                      Colors.red,
+                    ),
 
-                  requestCard(
-                    "Gas Smell in Unit",
-                    "Unit B-1-4",
-                    "Urgent",
-                    Colors.red,
-                  ),
+                  if (selectedFilter == "All" || selectedFilter == "Urgent")
+                    requestCard(
+                      "Gas Smell in Unit",
+                      "Unit B-1-4",
+                      "Urgent",
+                      Colors.red,
+                    ),
 
-                  requestCard(
-                    "No Water Supply",
-                    "Unit C-3-2",
-                    "High",
-                    Colors.orange,
-                  ),
+                  if (selectedFilter == "All" || selectedFilter == "High")
+                    requestCard(
+                      "No Water Supply",
+                      "Unit C-3-2",
+                      "High",
+                      Colors.orange,
+                    ),
 
-                  requestCard(
-                    "Electricity Trip Issue",
-                    "Unit A-2-3",
-                    "High",
-                    Colors.orange,
-                  ),
+                  if (selectedFilter == "All" || selectedFilter == "High")
+                    requestCard(
+                      "Electricity Trip Issue",
+                      "Unit A-2-3",
+                      "High",
+                      Colors.orange,
+                    ),
+
+                  if (selectedFilter == "All" || selectedFilter == "Normal")
+                    requestCard(
+                      "Broken Window",
+                      "Unit D-2-1",
+                      "Normal",
+                      Colors.blue,
+                    ),
+
+                  if (selectedFilter == "All" || selectedFilter == "Low")
+                    requestCard(
+                      "Paint Touch Up",
+                      "Unit C-1-5",
+                      "Low",
+                      Colors.green,
+                    ),
                 ],
               ),
             ),
