@@ -1,7 +1,26 @@
 import 'package:flutter/material.dart';
 
-class RequestClassificationScreen extends StatelessWidget {
+class RequestClassificationScreen extends StatefulWidget {
   const RequestClassificationScreen({super.key});
+
+  @override
+  State<RequestClassificationScreen> createState() =>
+      _RequestClassificationScreenState();
+}
+
+class _RequestClassificationScreenState
+    extends State<RequestClassificationScreen> {
+  List<Map<String, dynamic>> categories = [
+    {"title": "Urgent", "count": "5 Requests", "icon": Icons.warning},
+    {"title": "High", "count": "7 Requests", "icon": Icons.priority_high},
+    {
+      "title": "Normal",
+      "count": "9 Requests",
+      "icon": Icons.check_circle_outline,
+    },
+    {"title": "Low", "count": "3 Requests", "icon": Icons.arrow_downward},
+    {"title": "All Requests", "count": "24 Requests", "icon": Icons.list},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -14,37 +33,43 @@ class RequestClassificationScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
 
-        child: Column(
-          children: [
-            classificationTile("Urgent", "5 Requests", Icons.warning),
+        child: ListView.builder(
+          itemCount: categories.length,
 
-            classificationTile("High", "7 Requests", Icons.priority_high),
-
-            classificationTile(
-              "Normal",
-              "9 Requests",
-              Icons.check_circle_outline,
-            ),
-
-            classificationTile("Low", "3 Requests", Icons.arrow_downward),
-
-            classificationTile("All Requests", "24 Requests", Icons.list),
-          ],
+          itemBuilder: (context, index) {
+            return classificationTile(
+              context,
+              categories[index]["title"],
+              categories[index]["count"],
+              categories[index]["icon"],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget classificationTile(String title, String count, IconData icon) {
+  Widget classificationTile(
+    BuildContext context,
+    String title,
+    String count,
+    IconData icon,
+  ) {
     return Card(
       elevation: 3,
 
       margin: const EdgeInsets.only(bottom: 10),
 
       child: ListTile(
+        onTap: () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("$title selected")));
+        },
+
         leading: Icon(icon),
 
-        title: Text(title),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
 
         subtitle: Text(count),
 

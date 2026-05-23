@@ -137,19 +137,28 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
             const SizedBox(height: 15),
 
-            Card(
-              elevation: 3,
-              color: Colors.red.shade50,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ComplaintsScreen()),
+                );
+              },
 
-              child: const ListTile(
-                leading: Icon(Icons.report_problem, color: Colors.red),
+              child: Card(
+                elevation: 3,
+                color: Colors.red.shade50,
 
-                title: Text(
-                  "Open Complaints",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: const ListTile(
+                  leading: Icon(Icons.report_problem, color: Colors.red),
+
+                  title: Text(
+                    "Open Complaints",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+
+                  subtitle: Text("2 complaints unresolved"),
                 ),
-
-                subtitle: Text("2 complaints unresolved"),
               ),
             ),
 
@@ -157,14 +166,23 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
               children: [
                 const Text(
                   "Recent Requests",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
 
-                TextButton(onPressed: () {}, child: const Text("View All")),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MaintenanceScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text("View All"),
+                ),
               ],
             ),
 
@@ -184,6 +202,64 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               "Room C-07",
               "Completed",
               Colors.green,
+            ),
+
+            const SizedBox(height: 25),
+            const Text(
+              "Quick Actions",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Assign Worker",
+                    Icons.person_add,
+                    const AssignWorkerScreen(),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Create Task",
+                    Icons.assignment_add,
+                    const TaskManagementScreen(),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Send Notice",
+                    Icons.campaign,
+                    const CommunicationScreen(),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Reports",
+                    Icons.description,
+                    const ComplaintsScreen(),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 25),
@@ -396,6 +472,39 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         trailing: Text(
           status,
           style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  Widget quickActionButton(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Widget screen,
+  ) {
+    return SizedBox(
+      height: 90,
+
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+        },
+
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+
+          children: [
+            Icon(icon, size: 28),
+
+            const SizedBox(height: 8),
+
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );
