@@ -8,10 +8,53 @@ class TaskManagementScreen extends StatefulWidget {
 }
 
 class _TaskManagementScreenState extends State<TaskManagementScreen> {
-  bool task1 = true;
-  bool task2 = false;
-  bool task3 = true;
-  bool task4 = false;
+  final TextEditingController taskController = TextEditingController();
+
+  String selectedWorker = "John Tan";
+  String selectedPriority = "Medium";
+
+  List<Map<String, dynamic>> tasks = [
+    {
+      "title": "Follow up with technician",
+      "worker": "John Tan",
+      "priority": "High",
+      "completed": true,
+    },
+    {
+      "title": "Prepare monthly report",
+      "worker": "Manager",
+      "priority": "Medium",
+      "completed": false,
+    },
+    {
+      "title": "Check rent collection",
+      "worker": "Admin",
+      "priority": "Low",
+      "completed": true,
+    },
+    {
+      "title": "Inspect common area",
+      "worker": "Ahmed Ali",
+      "priority": "Medium",
+      "completed": false,
+    },
+  ];
+
+  Color getPriorityColor(String priority) {
+    switch (priority) {
+      case "High":
+        return Colors.red;
+
+      case "Medium":
+        return Colors.orange;
+
+      case "Low":
+        return Colors.green;
+
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,46 +66,118 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
 
         child: Column(
           children: [
-            taskCard("Follow up with technician", task1, (value) {
-              setState(() {
-                task1 = value!;
-              });
-            }),
+            TextField(
+              controller: taskController,
 
-            taskCard("Prepare monthly report", task2, (value) {
-              setState(() {
-                task2 = value!;
-              });
-            }),
+              decoration: InputDecoration(
+                hintText: "Enter new task",
+                prefixIcon: const Icon(Icons.task),
 
-            taskCard("Check rent collection", task3, (value) {
-              setState(() {
-                task3 = value!;
-              });
-            }),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
 
-            taskCard("Inspect common area", task4, (value) {
-              setState(() {
-                task4 = value!;
-              });
-            }),
+            const SizedBox(height: 12),
 
-            const Spacer(),
+            DropdownButtonFormField<String>(
+              value: selectedWorker,
+
+              decoration: const InputDecoration(
+                labelText: "Assign Worker",
+                border: OutlineInputBorder(),
+              ),
+
+              items: const [
+                DropdownMenuItem(value: "John Tan", child: Text("John Tan")),
+                DropdownMenuItem(value: "Ahmed Ali", child: Text("Ahmed Ali")),
+                DropdownMenuItem(value: "Mei Ling", child: Text("Mei Ling")),
+                DropdownMenuItem(
+                  value: "Ravi Kumar",
+                  child: Text("Ravi Kumar"),
+                ),
+              ],
+
+              onChanged: (value) {
+                setState(() {
+                  selectedWorker = value!;
+                });
+              },
+            ),
+
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<String>(
+              value: selectedPriority,
+
+              decoration: const InputDecoration(
+                labelText: "Priority",
+                border: OutlineInputBorder(),
+              ),
+
+              items: const [
+                DropdownMenuItem(value: "High", child: Text("High")),
+                DropdownMenuItem(value: "Medium", child: Text("Medium")),
+                DropdownMenuItem(value: "Low", child: Text("Low")),
+              ],
+
+              onChanged: (value) {
+                setState(() {
+                  selectedPriority = value!;
+                });
+              },
+            ),
+
+            const SizedBox(height: 15),
+
+            Expanded(
+              child: ListView.builder(
+                itemCount: tasks.length,
+
+                itemBuilder: (context, index) {
+                  return taskCard(
+                    tasks[index]["title"],
+                    tasks[index]["worker"],
+                    tasks[index]["priority"],
+                    tasks[index]["completed"],
+                    (value) {
+                      setState(() {
+                        tasks[index]["completed"] = value;
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
 
             SizedBox(
               width: double.infinity,
               height: 50,
 
               child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("New Task Added")),
-                  );
-                },
-
                 icon: const Icon(Icons.add),
 
                 label: const Text("Add Task"),
+
+                onPressed: () {
+                  if (taskController.text.trim().isNotEmpty) {
+                    setState(() {
+                      tasks.add({
+                        "title": taskController.text.trim(),
+                        "worker": selectedWorker,
+                        "priority": selectedPriority,
+                        "completed": false,
+                      });
+                    });
+
+                    taskController.clear();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Task Added Successfully")),
+                    );
+                  }
+                },
               ),
             ),
           ],
@@ -71,7 +186,13 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
     );
   }
 
-  Widget taskCard(String title, bool value, Function(bool?) onChanged) {
+  Widget taskCard(
+    String title,
+    String worker,
+    String priority,
+    bool value,
+    Function(bool?) onChanged,
+  ) {
     return Card(
       elevation: 3,
 
@@ -84,7 +205,37 @@ class _TaskManagementScreenState extends State<TaskManagementScreen> {
 
         onChanged: onChanged,
 
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+
+                decoration: value
+                    ? TextDecoration.lineThrough
+                    : TextDecoration.none,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text("Assigned: $worker", style: const TextStyle(fontSize: 12)),
+
+            const SizedBox(height: 2),
+
+            Text(
+              "Priority: $priority",
+              style: TextStyle(
+                color: getPriorityColor(priority),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

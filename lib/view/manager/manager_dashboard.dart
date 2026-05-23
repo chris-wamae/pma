@@ -292,6 +292,40 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
 
+        onTap: (index) {
+          switch (index) {
+            case 1:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MaintenanceScreen()),
+              );
+              break;
+
+            case 2:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TaskManagementScreen()),
+              );
+              break;
+
+            case 3:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CommunicationScreen()),
+              );
+              break;
+
+            case 4:
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TenantManagementScreen(),
+                ),
+              );
+              break;
+          }
+        },
+
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),

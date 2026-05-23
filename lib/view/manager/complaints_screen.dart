@@ -1,7 +1,55 @@
 import 'package:flutter/material.dart';
 
-class ComplaintsScreen extends StatelessWidget {
+class ComplaintsScreen extends StatefulWidget {
   const ComplaintsScreen({super.key});
+
+  @override
+  State<ComplaintsScreen> createState() => _ComplaintsScreenState();
+}
+
+class _ComplaintsScreenState extends State<ComplaintsScreen> {
+  String selectedFilter = "All";
+
+  List<Map<String, dynamic>> complaints = [
+    {
+      "title": "Noise Complaint",
+      "location": "Unit B-2-4",
+      "date": "12 May 2025",
+      "status": "Open",
+    },
+    {
+      "title": "Poor Cleanliness",
+      "location": "Unit C-1-2",
+      "date": "11 May 2025",
+      "status": "Open",
+    },
+    {
+      "title": "Parking Issue",
+      "location": "Block D",
+      "date": "10 May 2025",
+      "status": "Resolved",
+    },
+  ];
+
+  int get totalComplaints => complaints.length;
+
+  int get openComplaints =>
+      complaints.where((c) => c["status"] == "Open").length;
+
+  int get resolvedComplaints =>
+      complaints.where((c) => c["status"] == "Resolved").length;
+
+  bool shouldShow(String status) {
+    if (selectedFilter == "All") {
+      return true;
+    }
+
+    return selectedFilter == status;
+  }
+
+  Color getStatusColor(String status) {
+    return status == "Resolved" ? Colors.green : Colors.orange;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,64 +61,79 @@ class ComplaintsScreen extends StatelessWidget {
 
         child: Column(
           children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+
+                  children: [
+                    Column(
+                      children: [
+                        const Text(
+                          "Total",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text("$totalComplaints"),
+                      ],
+                    ),
+
+                    Column(
+                      children: [
+                        const Text(
+                          "Open",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text("$openComplaints"),
+                      ],
+                    ),
+
+                    Column(
+                      children: [
+                        const Text(
+                          "Resolved",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text("$resolvedComplaints"),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
             Row(
               children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: const Text("All"),
-                  ),
-                ),
+                Expanded(child: filterButton("All")),
 
                 const SizedBox(width: 8),
 
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: const Text("Open"),
-                  ),
-                ),
+                Expanded(child: filterButton("Open")),
 
                 const SizedBox(width: 8),
 
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: const Text("Resolved"),
-                  ),
-                ),
+                Expanded(child: filterButton("Resolved")),
               ],
             ),
 
             const SizedBox(height: 20),
 
             Expanded(
-              child: ListView(
-                children: [
-                  complaintCard(
-                    "Noise Complaint",
-                    "Unit B-2-4",
-                    "12 May 2025",
-                    "Open",
-                    Colors.orange,
-                  ),
+              child: ListView.builder(
+                itemCount: complaints.length,
 
-                  complaintCard(
-                    "Poor Cleanliness",
-                    "Unit C-1-2",
-                    "11 May 2025",
-                    "Open",
-                    Colors.orange,
-                  ),
+                itemBuilder: (context, index) {
+                  final complaint = complaints[index];
 
-                  complaintCard(
-                    "Parking Issue",
-                    "Block D",
-                    "10 May 2025",
-                    "Resolved",
-                    Colors.green,
-                  ),
-                ],
+                  if (!shouldShow(complaint["status"])) {
+                    return const SizedBox();
+                  }
+
+                  return complaintCard(complaint, index);
+                },
               ),
             ),
 
@@ -98,13 +161,25 @@ class ComplaintsScreen extends StatelessWidget {
     );
   }
 
-  Widget complaintCard(
-    String title,
-    String location,
-    String date,
-    String status,
-    Color color,
-  ) {
+  Widget filterButton(String text) {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          selectedFilter = text;
+        });
+      },
+
+      style: ElevatedButton.styleFrom(
+        backgroundColor: selectedFilter == text
+            ? Colors.blue
+            : Colors.grey.shade300,
+      ),
+
+      child: Text(text),
+    );
+  }
+
+  Widget complaintCard(Map<String, dynamic> complaint, int index) {
     return Card(
       elevation: 3,
 
@@ -115,13 +190,41 @@ class ComplaintsScreen extends StatelessWidget {
       child: ListTile(
         leading: const Icon(Icons.report_problem),
 
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          complaint["title"],
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
 
-        subtitle: Text("$location • $date"),
+        subtitle: Text("${complaint["location"]} • ${complaint["date"]}"),
 
-        trailing: Text(
-          status,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+
+          children: [
+            Text(
+              complaint["status"],
+              style: TextStyle(
+                color: getStatusColor(complaint["status"]),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            if (complaint["status"] == "Open")
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    complaints[index]["status"] = "Resolved";
+                  });
+                },
+
+                child: const Text(
+                  "Resolve",
+                  style: TextStyle(color: Colors.blue, fontSize: 12),
+                ),
+              ),
+          ],
         ),
       ),
     );
