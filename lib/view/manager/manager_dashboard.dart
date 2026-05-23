@@ -166,14 +166,23 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
               children: [
                 const Text(
                   "Recent Requests",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
 
-                TextButton(onPressed: () {}, child: const Text("View All")),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MaintenanceScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text("View All"),
+                ),
               ],
             ),
 
