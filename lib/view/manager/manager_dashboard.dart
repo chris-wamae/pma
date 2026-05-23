@@ -137,19 +137,28 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
             const SizedBox(height: 15),
 
-            Card(
-              elevation: 3,
-              color: Colors.red.shade50,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ComplaintsScreen()),
+                );
+              },
 
-              child: const ListTile(
-                leading: Icon(Icons.report_problem, color: Colors.red),
+              child: Card(
+                elevation: 3,
+                color: Colors.red.shade50,
 
-                title: Text(
-                  "Open Complaints",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: const ListTile(
+                  leading: Icon(Icons.report_problem, color: Colors.red),
+
+                  title: Text(
+                    "Open Complaints",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+
+                  subtitle: Text("2 complaints unresolved"),
                 ),
-
-                subtitle: Text("2 complaints unresolved"),
               ),
             ),
 
