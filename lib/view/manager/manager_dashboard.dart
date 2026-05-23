@@ -187,6 +187,64 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
             ),
 
             const SizedBox(height: 25),
+            const Text(
+              "Quick Actions",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Assign Worker",
+                    Icons.person_add,
+                    const AssignWorkerScreen(),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Create Task",
+                    Icons.assignment_add,
+                    const TaskManagementScreen(),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Send Notice",
+                    Icons.campaign,
+                    const CommunicationScreen(),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: quickActionButton(
+                    context,
+                    "Reports",
+                    Icons.description,
+                    const ComplaintsScreen(),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 25),
 
             const Text(
               "Manager Functions",
@@ -396,6 +454,39 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         trailing: Text(
           status,
           style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  Widget quickActionButton(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Widget screen,
+  ) {
+    return SizedBox(
+      height: 90,
+
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+        },
+
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+
+          children: [
+            Icon(icon, size: 28),
+
+            const SizedBox(height: 8),
+
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );
