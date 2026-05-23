@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'Messagingscreen.dart';
 import 'Maintanence.dart';
 import 'ReportPage.dart';
+import 'TicketPage.dart';
+import 'ProfilePage.dart';
 
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
@@ -23,15 +25,22 @@ class TenantDashboard extends StatelessWidget {
             ),
           ),
         ),
-        title: const Text(
-          "Welcome! User 12345",
-          style: TextStyle(fontSize: 16),
-        ),
-        actions: const [
+        title: const Text("Welcome! Xiao Xuan", style: TextStyle(fontSize: 16)),
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+            padding: const EdgeInsets.only(right: 16.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              },
+              child: const CircleAvatar(
+                backgroundImage: NetworkImage(
+                  'https://via.placeholder.com/150',
+                ),
+              ),
             ),
           ),
         ],
@@ -106,7 +115,6 @@ class TenantDashboard extends StatelessWidget {
               mainAxisSpacing: 10,
               childAspectRatio: 2.5,
               children: [
-                // 2. 这里的 Maintenance 现在可以点击跳转了
                 _buildActionButton(Icons.build, "Maintenance", () {
                   Navigator.push(
                     context,
@@ -121,7 +129,11 @@ class TenantDashboard extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const ReportPage()),
                   );
                 }),
-                _buildActionButton(Icons.description, "Documents", () {}),
+                _buildActionButton(Icons.description, "Documents", () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text("Coming Soon")));
+                }),
                 _buildActionButton(Icons.gavel, "House Rules", () {}),
                 _buildActionButton(Icons.message, "Messaging", () {
                   Navigator.push(
@@ -141,6 +153,19 @@ class TenantDashboard extends StatelessWidget {
         selectedItemColor: const Color(0xFF0A4E9A),
         unselectedItemColor: Colors.grey,
         currentIndex: 0,
+        onTap: (index) {
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const TicketPage()),
+            );
+          } else if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          }
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
@@ -156,6 +181,8 @@ class TenantDashboard extends StatelessWidget {
       ),
     );
   }
+
+  // --- 下面这些辅助函数必须在 TenantDashboard 类的花括号内 ---
 
   Widget _buildInfoCard(String title, List<String> lines) {
     return Container(
@@ -192,7 +219,6 @@ class TenantDashboard extends StatelessWidget {
     );
   }
 
-  // 3. 我修改了这个辅助组件，让它支持点击事件 (onTap)
   Widget _buildActionButton(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
