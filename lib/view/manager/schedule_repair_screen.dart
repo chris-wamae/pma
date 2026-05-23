@@ -113,6 +113,24 @@ class _ScheduleRepairScreenState extends State<ScheduleRepairScreen> {
                       title: const Text("Date"),
 
                       subtitle: Text(selectedDate),
+
+                      trailing: const Icon(Icons.edit_calendar),
+
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2025),
+                          lastDate: DateTime(2030),
+                        );
+
+                        if (pickedDate != null) {
+                          setState(() {
+                            selectedDate =
+                                "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                          });
+                        }
+                      },
                     ),
                   ),
                 ),
@@ -123,13 +141,24 @@ class _ScheduleRepairScreenState extends State<ScheduleRepairScreen> {
 
             Card(
               elevation: 3,
-
               child: ListTile(
                 leading: const Icon(Icons.access_time),
-
                 title: const Text("Time"),
-
                 subtitle: Text(selectedTime),
+                trailing: const Icon(Icons.schedule),
+
+                onTap: () async {
+                  TimeOfDay? pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+
+                  if (pickedTime != null) {
+                    setState(() {
+                      selectedTime = pickedTime.format(context);
+                    });
+                  }
+                },
               ),
             ),
 
