@@ -13,6 +13,7 @@ import 'package:pma/view/manager/tenant_management_screen.dart';
 import 'package:pma/view/manager/property_rating_screen.dart';
 import 'package:pma/view/manager/priority_requests_screen.dart';
 import 'package:pma/view/manager/rent_collection_screen.dart';
+import 'package:pma/view/manager/request_details_screen.dart';
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
@@ -23,15 +24,11 @@ class ManagerDashboard extends StatefulWidget {
 
 class _ManagerDashboardState extends State<ManagerDashboard> {
   final List<Map<String, dynamic>> requests = [
-    {"title": "Leaking Pipe", "status": "Urgent"},
+    {"title": "Leaking Pipe", "room": "Room A-12", "status": "Pending"},
 
-    {"title": "Broken Aircond", "status": "In Progress"},
+    {"title": "Broken Aircond", "room": "Room B-03", "status": "In Progress"},
 
-    {"title": "Light Not Working", "status": "Completed"},
-
-    {"title": "Water Heater", "status": "Urgent"},
-
-    {"title": "Door Lock Broken", "status": "Completed"},
+    {"title": "Light Not Working", "room": "Room C-07", "status": "Completed"},
   ];
 
   int get totalRequests => requests.length;
@@ -39,8 +36,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   int get completedRequests =>
       requests.where((r) => r["status"] == "Completed").length;
 
-  int get urgentRequests =>
-      requests.where((r) => r["status"] == "Urgent").length;
+  int get pendingRequests =>
+      requests.where((r) => r["status"] == "Pending").length;
 
   int get inProgressRequests =>
       requests.where((r) => r["status"] == "In Progress").length;
@@ -98,8 +95,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
                 Expanded(
                   child: dashboardBox(
-                    urgentRequests.toString(),
-                    "Urgent",
+                    pendingRequests.toString(),
+                    "Pending",
                     Colors.red,
                   ),
                 ),
@@ -126,11 +123,11 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                   leading: Icon(Icons.warning_amber, color: Colors.orange),
 
                   title: Text(
-                    "Urgent Alerts",
+                    "Pending Alerts",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
 
-                  subtitle: Text("3 urgent requests require attention"),
+                  subtitle: Text("3 pending requests require attention"),
                 ),
               ),
             ),
@@ -188,21 +185,35 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
             const SizedBox(height: 8),
 
-            requestCard("Leaking Pipe", "Room A-12", "Urgent", Colors.red),
+            ...List.generate(requests.length, (index) {
+              final request = requests[index];
 
-            requestCard(
-              "Broken Aircond",
-              "Room B-03",
-              "In Progress",
-              Colors.orange,
-            ),
+              return InkWell(
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RequestDetailsScreen(
+                        currentStatus: request["status"],
+                      ),
+                    ),
+                  );
 
-            requestCard(
-              "Light Not Working",
-              "Room C-07",
-              "Completed",
-              Colors.green,
-            ),
+                  if (result != null) {
+                    setState(() {
+                      request["status"] = result;
+                    });
+                  }
+                },
+
+                child: requestCard(
+                  request["title"],
+                  request["room"],
+                  request["status"],
+                  getStatusColor(request["status"]),
+                ),
+              );
+            }),
 
             const SizedBox(height: 25),
             const Text(
@@ -452,6 +463,22 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         ],
       ),
     );
+  }
+
+  Color getStatusColor(String status) {
+    switch (status) {
+      case "Pending":
+        return Colors.red;
+
+      case "In Progress":
+        return Colors.orange;
+
+      case "Completed":
+        return Colors.green;
+
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget requestCard(String title, String room, String status, Color color) {
