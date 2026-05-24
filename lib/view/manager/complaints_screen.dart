@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class ComplaintsScreen extends StatefulWidget {
   const ComplaintsScreen({super.key});
@@ -30,6 +32,36 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
       "status": "Resolved",
     },
   ];
+
+  Future<void> generatePdf() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text("Complaint Report", style: pw.TextStyle(fontSize: 24)),
+
+              pw.SizedBox(height: 20),
+
+              ...complaints.map(
+                (complaint) => pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 10),
+                  child: pw.Text(
+                    "${complaint["title"]} - ${complaint["status"]}",
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+  }
 
   int get totalComplaints => complaints.length;
 
@@ -142,12 +174,8 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
               height: 50,
 
               child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Report Generated Successfully"),
-                    ),
-                  );
+                onPressed: () async {
+                  await generatePdf();
                 },
 
                 icon: const Icon(Icons.description),

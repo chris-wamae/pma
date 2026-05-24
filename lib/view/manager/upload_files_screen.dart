@@ -1,4 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
+class UploadRecord {
+  final String title;
+  final List<File> photos;
+
+  UploadRecord({required this.title, required this.photos});
+}
 
 class UploadFilesScreen extends StatefulWidget {
   const UploadFilesScreen({super.key});
@@ -10,9 +19,23 @@ class UploadFilesScreen extends StatefulWidget {
 class _UploadFilesScreenState extends State<UploadFilesScreen> {
   final TextEditingController descriptionController = TextEditingController();
 
-  List<String> uploadHistory = [];
+  final ImagePicker picker = ImagePicker();
+
+  List<File> photos = [];
+
+  List<UploadRecord> uploadHistory = [];
 
   String quotationFile = "quotation.pdf";
+
+  Future<void> pickImage() async {
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        photos.add(File(image.path));
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,20 +61,57 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
 
-              children: [photoBox(), photoBox(), photoBox(), photoBox()],
+              children: [
+                ...photos.map(
+                  (photo) => Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+
+                        child: Image.file(
+                          photo,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 5,
+                        right: 5,
+
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              photos.remove(photo);
+                            });
+                          },
+
+                          child: const CircleAvatar(
+                            radius: 12,
+                            backgroundColor: Colors.red,
+
+                            child: Icon(
+                              Icons.close,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                GestureDetector(onTap: pickImage, child: photoBox()),
+              ],
             ),
 
             const SizedBox(height: 20),
 
             ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text("Photo Added")));
-              },
-
+              onPressed: pickImage,
               icon: const Icon(Icons.add),
-
               label: const Text("Add More"),
             ),
 
@@ -103,13 +163,28 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
 
               child: ElevatedButton(
                 onPressed: () {
+                  if (photos.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Please select at least one photo"),
+                      ),
+                    );
+                    return;
+                  }
+
                   setState(() {
                     uploadHistory.insert(
                       0,
-                      descriptionController.text.trim().isEmpty
-                          ? "Repair Photo Set"
-                          : descriptionController.text,
+                      UploadRecord(
+                        title: descriptionController.text.trim().isEmpty
+                            ? "Repair Photo Set"
+                            : descriptionController.text,
+
+                        photos: List<File>.from(photos),
+                      ),
                     );
+
+                    photos.clear();
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -136,11 +211,49 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
             const SizedBox(height: 10),
 
             ...uploadHistory.map(
-              (item) => Card(
+              (record) => Card(
                 child: ListTile(
                   leading: const Icon(Icons.image),
 
-                  title: Text(item),
+                  title: Text(record.title),
+
+                  trailing: const Icon(Icons.visibility),
+
+                  onTap: () {
+                    showDialog(
+                      context: context,
+
+                      builder: (_) => AlertDialog(
+                        title: Text(record.title),
+
+                        content: SizedBox(
+                          width: double.maxFinite,
+
+                          child: GridView.builder(
+                            shrinkWrap: true,
+
+                            itemCount: record.photos.length,
+
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                ),
+
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.all(4),
+
+                                child: Image.file(
+                                  record.photos[index],
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
