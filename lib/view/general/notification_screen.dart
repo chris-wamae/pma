@@ -226,6 +226,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               ],
                             ),
 
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+
+                              onPressed: () {
+                                setState(() {
+                                  notifications.remove(notification);
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Notification deleted"),
+                                  ),
+                                );
+                              },
+                            ),
+
                             onTap: () {
                               setState(() {
                                 notification["read"] = true;
@@ -252,7 +268,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         backgroundColor: selectedFilter == label
             ? Colors.black
             : Colors.grey.shade300,
-
         foregroundColor: selectedFilter == label ? Colors.white : Colors.black,
       ),
 

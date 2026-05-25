@@ -217,43 +217,65 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
 
                   title: Text(record.title),
 
-                  trailing: const Icon(Icons.visibility),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
 
-                  onTap: () {
-                    showDialog(
-                      context: context,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.visibility),
 
-                      builder: (_) => AlertDialog(
-                        title: Text(record.title),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
 
-                        content: SizedBox(
-                          width: double.maxFinite,
+                            builder: (_) => AlertDialog(
+                              title: Text(record.title),
 
-                          child: GridView.builder(
-                            shrinkWrap: true,
+                              content: SizedBox(
+                                width: double.maxFinite,
 
-                            itemCount: record.photos.length,
+                                child: GridView.builder(
+                                  shrinkWrap: true,
 
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
+                                  itemCount: record.photos.length,
+
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                      ),
+
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(4),
+
+                                      child: Image.file(
+                                        record.photos[index],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    );
+                                  },
                                 ),
-
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.all(4),
-
-                                child: Image.file(
-                                  record.photos[index],
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+
+                        onPressed: () {
+                          setState(() {
+                            uploadHistory.remove(record);
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Upload deleted")),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -267,7 +289,6 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
-
         borderRadius: BorderRadius.circular(10),
       ),
 
