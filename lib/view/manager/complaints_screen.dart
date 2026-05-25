@@ -242,9 +242,45 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
             if (complaint["status"] == "Open")
               GestureDetector(
                 onTap: () {
-                  setState(() {
-                    complaints[index]["status"] = "Resolved";
-                  });
+                  showDialog(
+                    context: context,
+
+                    builder: (_) => AlertDialog(
+                      title: const Text("Resolve Complaint"),
+
+                      content: const Text("Mark this complaint as resolved?"),
+
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+
+                          child: const Text("Cancel"),
+                        ),
+
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              complaints[index]["status"] = "Resolved";
+                            });
+
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Complaint resolved successfully",
+                                ),
+                              ),
+                            );
+                          },
+
+                          child: const Text("Confirm"),
+                        ),
+                      ],
+                    ),
+                  );
                 },
 
                 child: const Text(
@@ -257,4 +293,4 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
       ),
     );
   }
-}
+}// GestureDetector
