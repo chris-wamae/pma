@@ -52,6 +52,27 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.folder),
+
+                title: const Text(
+                  "Total Uploads",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                trailing: Text(
+                  uploadHistory.length.toString(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
             const SizedBox(height: 15),
 
             GridView.count(
@@ -265,12 +286,44 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
                         icon: const Icon(Icons.delete, color: Colors.red),
 
                         onPressed: () {
-                          setState(() {
-                            uploadHistory.remove(record);
-                          });
+                          showDialog(
+                            context: context,
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Upload deleted")),
+                            builder: (_) => AlertDialog(
+                              title: const Text("Delete Upload"),
+
+                              content: const Text(
+                                "Are you sure you want to delete this upload?",
+                              ),
+
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+
+                                  child: const Text("Cancel"),
+                                ),
+
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      uploadHistory.remove(record);
+                                    });
+
+                                    Navigator.pop(context);
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Upload deleted"),
+                                      ),
+                                    );
+                                  },
+
+                                  child: const Text("Delete"),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),
