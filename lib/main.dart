@@ -34,8 +34,8 @@ class MyApp extends StatelessWidget {
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
       //home: const ManagerDashboard(),
-      //home: const TenantDashboard(),
-      home: const GeneralDashboard(),
+      home: const TenantDashboard(),
+      //home: const GeneralDashboard(),
     );
   }
 }
