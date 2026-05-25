@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'view/manager/manager_dashboard.dart';
+//import 'view/manager/manager_dashboard.dart';
 //import 'package:pma/view/tenant/TenantDashboard.dart';
-//import 'view/general/general_dashboard.dart';
+import 'view/general/general_dashboard.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,9 +33,9 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const ManagerDashboard(),
+      //home: const ManagerDashboard(),
       //home: const TenantDashboard(),
-      //home: const GeneralDashboard(),
+      home: const GeneralDashboard(),
     );
   }
 }

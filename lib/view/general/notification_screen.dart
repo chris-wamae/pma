@@ -230,13 +230,47 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               icon: const Icon(Icons.delete, color: Colors.red),
 
                               onPressed: () {
-                                setState(() {
-                                  notifications.remove(notification);
-                                });
+                                showDialog(
+                                  context: context,
 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Notification deleted"),
+                                  builder: (_) => AlertDialog(
+                                    title: const Text("Delete Notification"),
+
+                                    content: const Text(
+                                      "Are you sure you want to delete this notification?",
+                                    ),
+
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+
+                                        child: const Text("Cancel"),
+                                      ),
+
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            notifications.remove(notification);
+                                          });
+
+                                          Navigator.pop(context);
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Notification deleted",
+                                              ),
+                                            ),
+                                          );
+                                        },
+
+                                        child: const Text("Delete"),
+                                      ),
+                                    ],
                                   ),
                                 );
                               },
@@ -247,8 +281,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 notification["read"] = true;
                               });
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(notification["title"])),
+                              showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: Text(notification["title"]),
+
+                                  content: Text(notification["message"]),
+
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+
+                                      child: const Text("Close"),
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                           ),
@@ -268,6 +317,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         backgroundColor: selectedFilter == label
             ? Colors.black
             : Colors.grey.shade300,
+
         foregroundColor: selectedFilter == label ? Colors.white : Colors.black,
       ),
 
