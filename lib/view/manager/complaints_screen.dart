@@ -216,6 +216,43 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
       child: ListTile(
+        onTap: () {
+          showDialog(
+            context: context,
+
+            builder: (_) => AlertDialog(
+              title: Text(complaint["title"]),
+
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  Text("Location: ${complaint["location"]}"),
+
+                  const SizedBox(height: 8),
+
+                  Text("Date: ${complaint["date"]}"),
+
+                  const SizedBox(height: 8),
+
+                  Text("Status: ${complaint["status"]}"),
+                ],
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+
+                  child: const Text("Close"),
+                ),
+              ],
+            ),
+          );
+        },
+
         leading: const Icon(Icons.report_problem),
 
         title: Text(
