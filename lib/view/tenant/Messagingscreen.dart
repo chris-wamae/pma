@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../model/MessageModel.dart';
+import '../../models/MessageModel.dart';
 
 class MessagingScreen extends StatefulWidget {
   // 從 StatelessWidget 改成 StatefulWidget
