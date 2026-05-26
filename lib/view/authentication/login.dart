@@ -35,7 +35,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       final ok = await vm.signIn(_emailCtrl.text.trim(), _pwdCtrl.text);
                       if (!mounted) return;
                       if (ok) {
-                        navigator.pushReplacement(MaterialPageRoute(builder: (_) => const PropertyListScreen()));
+                        final role = await vm.getUserRole();
+                        final r = (role ?? 'owner').toLowerCase();
+                        if (r.startsWith('owner')) {
+                          navigator.pushReplacementNamed('/owner');
+                        } else if (r.startsWith('manager')) {
+                          navigator.pushReplacementNamed('/manager');
+                        } else {
+                          navigator.pushReplacementNamed('/tenant');
+                        }
                       } else {
                         messenger.showSnackBar(SnackBar(content: Text(vm.error ?? 'Sign-in failed')));
                       }
