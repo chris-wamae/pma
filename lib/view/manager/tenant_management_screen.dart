@@ -10,12 +10,17 @@ class TenantManagementScreen extends StatefulWidget {
 class _TenantManagementScreenState extends State<TenantManagementScreen> {
   final TextEditingController tenantController = TextEditingController();
 
-  List<String> tenants = ["John Tan", "Amy Lee", "Kevin Lim", "Sarah Wong"];
+  List<Map<String, dynamic>> tenants = [
+    {"name": "John Tan", "status": "Pending"},
+    {"name": "Amy Lee", "status": "Pending"},
+    {"name": "Kevin Lim", "status": "Accepted"},
+    {"name": "Sarah Wong", "status": "Pending"},
+  ];
 
   void addTenant() {
     if (tenantController.text.isNotEmpty) {
       setState(() {
-        tenants.add(tenantController.text);
+        tenants.add({"name": tenantController.text, "status": "Pending"});
       });
 
       tenantController.clear();
@@ -76,14 +81,42 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                     child: ListTile(
                       leading: const Icon(Icons.person),
 
-                      title: Text(tenants[index]),
+                      title: Text(tenants[index]["name"]),
 
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                      subtitle: Text("Status: ${tenants[index]["status"]}"),
 
-                        onPressed: () {
-                          removeTenant(index);
-                        },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+
+                        children: [
+                          if (tenants[index]["status"] == "Pending")
+                            IconButton(
+                              icon: const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              ),
+
+                              onPressed: () {
+                                setState(() {
+                                  tenants[index]["status"] = "Accepted";
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Tenancy accepted"),
+                                  ),
+                                );
+                              },
+                            ),
+
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+
+                            onPressed: () {
+                              removeTenant(index);
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   );
