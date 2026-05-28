@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pma/view/tenant/TenantDocumentPage.dart';
 import 'Messagingscreen.dart';
 import 'Maintanence.dart';
 import 'ReportPage.dart';
 import 'TicketPage.dart';
 import 'ProfilePage.dart';
 import 'InvoiceDetail.dart';
+import 'HouseRulesPage.dart';
 
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
@@ -147,11 +149,21 @@ class TenantDashboard extends StatelessWidget {
                   );
                 }),
                 _buildActionButton(Icons.description, "Documents", () {
-                  ScaffoldMessenger.of(
+                  Navigator.push(
                     context,
-                  ).showSnackBar(const SnackBar(content: Text("Coming Soon")));
+                    MaterialPageRoute(
+                      builder: (context) => const TenantDocumentPage(),
+                    ),
+                  );
                 }),
-                _buildActionButton(Icons.gavel, "House Rules", () {}),
+                _buildActionButton(Icons.gavel, "House Rules", () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HouseRulesPage(),
+                    ),
+                  );
+                }),
                 _buildActionButton(Icons.message, "Messaging", () {
                   Navigator.push(
                     context,
@@ -198,8 +210,6 @@ class TenantDashboard extends StatelessWidget {
       ),
     );
   }
-
-  // --- 辅助函数 ---
 
   Widget _buildInfoCard(String title, List<String> lines) {
     return Container(

@@ -5,7 +5,7 @@ class TicketPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 模擬的 Ticket 數據
+    // fake ticket
     final List<Map<String, dynamic>> tickets = [
       {
         "id": "TK-8801",
