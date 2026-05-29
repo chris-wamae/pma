@@ -4,6 +4,7 @@ import '../../viewmodels/owner_property_viewmodel.dart';
 import 'property_list.dart';
 import 'add_property.dart';
 import 'edit_property.dart';
+import '../general/file_management_screen.dart'; // Import FileManagementScreen
 
 class OwnerDashboard extends StatelessWidget {
   const OwnerDashboard({super.key});
@@ -61,6 +62,31 @@ class OwnerDashboard extends StatelessWidget {
                         },
                         icon: const Icon(Icons.add),
                         label: const Text('Add Property'),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10), // Add spacing between rows of buttons
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FileManagementScreen(
+                                entityId: 'owner_dashboard_id', // Placeholder, needs actual ID
+                                entityType: 'owner', // Placeholder, needs actual type
+                                uploadedBy: 'current_user_id', // Placeholder, needs actual user
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.folder),
+                        label: const Text('File Management'),
                       ),
                     ),
                   ],
