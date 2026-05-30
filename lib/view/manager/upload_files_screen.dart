@@ -52,6 +52,27 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.folder),
+
+                title: const Text(
+                  "Total Uploads",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                trailing: Text(
+                  uploadHistory.length.toString(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
             const SizedBox(height: 15),
 
             GridView.count(
@@ -217,43 +238,97 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
 
                   title: Text(record.title),
 
-                  trailing: const Icon(Icons.visibility),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
 
-                  onTap: () {
-                    showDialog(
-                      context: context,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.visibility),
 
-                      builder: (_) => AlertDialog(
-                        title: Text(record.title),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
 
-                        content: SizedBox(
-                          width: double.maxFinite,
+                            builder: (_) => AlertDialog(
+                              title: Text(record.title),
 
-                          child: GridView.builder(
-                            shrinkWrap: true,
+                              content: SizedBox(
+                                width: double.maxFinite,
 
-                            itemCount: record.photos.length,
+                                child: GridView.builder(
+                                  shrinkWrap: true,
 
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
+                                  itemCount: record.photos.length,
+
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                      ),
+
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(4),
+
+                                      child: Image.file(
+                                        record.photos[index],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    );
+                                  },
                                 ),
-
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.all(4),
-
-                                child: Image.file(
-                                  record.photos[index],
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+
+                            builder: (_) => AlertDialog(
+                              title: const Text("Delete Upload"),
+
+                              content: const Text(
+                                "Are you sure you want to delete this upload?",
+                              ),
+
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+
+                                  child: const Text("Cancel"),
+                                ),
+
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      uploadHistory.remove(record);
+                                    });
+
+                                    Navigator.pop(context);
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Upload deleted"),
+                                      ),
+                                    );
+                                  },
+
+                                  child: const Text("Delete"),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -267,7 +342,6 @@ class _UploadFilesScreenState extends State<UploadFilesScreen> {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
-
         borderRadius: BorderRadius.circular(10),
       ),
 

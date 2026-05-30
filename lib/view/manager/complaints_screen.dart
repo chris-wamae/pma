@@ -216,6 +216,43 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
       child: ListTile(
+        onTap: () {
+          showDialog(
+            context: context,
+
+            builder: (_) => AlertDialog(
+              title: Text(complaint["title"]),
+
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  Text("Location: ${complaint["location"]}"),
+
+                  const SizedBox(height: 8),
+
+                  Text("Date: ${complaint["date"]}"),
+
+                  const SizedBox(height: 8),
+
+                  Text("Status: ${complaint["status"]}"),
+                ],
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+
+                  child: const Text("Close"),
+                ),
+              ],
+            ),
+          );
+        },
+
         leading: const Icon(Icons.report_problem),
 
         title: Text(
@@ -242,9 +279,45 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
             if (complaint["status"] == "Open")
               GestureDetector(
                 onTap: () {
-                  setState(() {
-                    complaints[index]["status"] = "Resolved";
-                  });
+                  showDialog(
+                    context: context,
+
+                    builder: (_) => AlertDialog(
+                      title: const Text("Resolve Complaint"),
+
+                      content: const Text("Mark this complaint as resolved?"),
+
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+
+                          child: const Text("Cancel"),
+                        ),
+
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              complaints[index]["status"] = "Resolved";
+                            });
+
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Complaint resolved successfully",
+                                ),
+                              ),
+                            );
+                          },
+
+                          child: const Text("Confirm"),
+                        ),
+                      ],
+                    ),
+                  );
                 },
 
                 child: const Text(
@@ -257,4 +330,4 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
       ),
     );
   }
-}
+}// GestureDetector

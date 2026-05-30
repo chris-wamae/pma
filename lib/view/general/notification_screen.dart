@@ -17,7 +17,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool messages = true;
   bool systemUpdates = false;
 
-  List<Map<String, dynamic>> notifications = [
+  final List<Map<String, dynamic>> notifications = [
     {
       "title": "New Maintenance Request",
       "message": "Leaking pipe in kitchen",
@@ -87,6 +87,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
         actions: [
           IconButton(
+            icon: const Icon(Icons.done_all),
+
+            onPressed: () {
+              setState(() {
+                for (var notification in notifications) {
+                  notification["read"] = true;
+                }
+              });
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("All notifications marked as read"),
+                ),
+              );
+            },
+          ),
+
+          IconButton(
             icon: const Icon(Icons.settings),
 
             onPressed: () async {
@@ -155,63 +173,137 @@ class _NotificationScreenState extends State<NotificationScreen> {
             const SizedBox(height: 15),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredNotifications.length,
-
-                itemBuilder: (context, index) {
-                  final notification = filteredNotifications[index];
-
-                  return Card(
-                    color: notification["read"]
-                        ? Colors.white
-                        : Colors.orange.shade50,
-
-                    child: ListTile(
-                      leading: Icon(
-                        notification["important"]
-                            ? Icons.priority_high
-                            : Icons.notifications,
-                        color: notification["important"]
-                            ? Colors.red
-                            : Colors.blue,
+              child: filteredNotifications.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No notifications available",
+                        style: TextStyle(fontSize: 16),
                       ),
+                    )
+                  : ListView.builder(
+                      itemCount: filteredNotifications.length,
 
-                      title: Text(
-                        notification["title"],
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                      itemBuilder: (context, index) {
+                        final notification = filteredNotifications[index];
 
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        return Card(
+                          color: notification["read"]
+                              ? Colors.white
+                              : Colors.orange.shade50,
 
-                        children: [
-                          Text(notification["message"]),
-
-                          const SizedBox(height: 4),
-
-                          Text(
-                            notification["time"],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
+                          child: ListTile(
+                            leading: Icon(
+                              notification["important"]
+                                  ? Icons.priority_high
+                                  : Icons.notifications,
+                              color: notification["important"]
+                                  ? Colors.red
+                                  : Colors.blue,
                             ),
+
+                            title: Text(
+                              notification["title"],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+
+                              children: [
+                                Text(notification["message"]),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  notification["time"],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+
+                                  builder: (_) => AlertDialog(
+                                    title: const Text("Delete Notification"),
+
+                                    content: const Text(
+                                      "Are you sure you want to delete this notification?",
+                                    ),
+
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+
+                                        child: const Text("Cancel"),
+                                      ),
+
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            notifications.remove(notification);
+                                          });
+
+                                          Navigator.pop(context);
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Notification deleted",
+                                              ),
+                                            ),
+                                          );
+                                        },
+
+                                        child: const Text("Delete"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+
+                            onTap: () {
+                              setState(() {
+                                notification["read"] = true;
+                              });
+
+                              showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: Text(notification["title"]),
+
+                                  content: Text(notification["message"]),
+
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+
+                                      child: const Text("Close"),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        ],
-                      ),
-
-                      onTap: () {
-                        setState(() {
-                          notification["read"] = true;
-                        });
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(notification["title"])),
                         );
                       },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

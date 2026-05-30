@@ -42,6 +42,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   int get inProgressRequests =>
       requests.where((r) => r["status"] == "In Progress").length;
 
+  int get openComplaints => 2;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,17 +119,24 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
               child: Card(
                 elevation: 3,
-                color: Colors.orange.shade50,
+                color: pendingRequests == 0
+                    ? Colors.green.shade50
+                    : Colors.orange.shade50,
 
-                child: const ListTile(
-                  leading: Icon(Icons.warning_amber, color: Colors.orange),
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.warning_amber,
+                    color: Colors.orange,
+                  ),
 
-                  title: Text(
+                  title: const Text(
                     "Pending Alerts",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
 
-                  subtitle: Text("3 pending requests require attention"),
+                  subtitle: Text(
+                    "$pendingRequests pending requests require attention",
+                  ),
                 ),
               ),
             ),
@@ -146,15 +155,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 elevation: 3,
                 color: Colors.red.shade50,
 
-                child: const ListTile(
-                  leading: Icon(Icons.report_problem, color: Colors.red),
+                child: ListTile(
+                  leading: const Icon(Icons.report_problem, color: Colors.red),
 
-                  title: Text(
+                  title: const Text(
                     "Open Complaints",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
 
-                  subtitle: Text("2 complaints unresolved"),
+                  subtitle: Text("$openComplaints complaints unresolved"),
                 ),
               ),
             ),
