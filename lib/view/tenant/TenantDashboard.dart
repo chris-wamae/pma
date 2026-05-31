@@ -11,6 +11,70 @@ import 'HouseRulesPage.dart';
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
 
+  void _showChatSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Select Contact",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFF0A4E9A),
+                  child: Icon(Icons.support_agent, color: Colors.white),
+                ),
+                title: const Text("Chat with Manager"),
+                subtitle: const Text("For maintenance & general inquiries"),
+                onTap: () {
+                  Navigator.pop(context);
+                  // 🚀 关键点：传参 manager_chats
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const MessagingScreen(chatTarget: "manager_chats"),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Colors.orange,
+                  child: Icon(Icons.person, color: Colors.white),
+                ),
+                title: const Text("Chat with Owner"),
+                subtitle: const Text("For contract & payment issues"),
+                onTap: () {
+                  Navigator.pop(context);
+                  // 🚀 关键点：传参 owner_chats
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const MessagingScreen(chatTarget: "owner_chats"),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +149,6 @@ class TenantDashboard extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            // 2. 跳转到账单详情页
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -104,7 +167,6 @@ class TenantDashboard extends StatelessWidget {
                             foregroundColor: Colors.white,
                           ),
                           onPressed: () {
-                            // 也可以跳转到支付详情
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -165,12 +227,7 @@ class TenantDashboard extends StatelessWidget {
                   );
                 }),
                 _buildActionButton(Icons.message, "Messaging", () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MessagingScreen(),
-                    ),
-                  );
+                  _showChatSelection(context);
                 }),
               ],
             ),

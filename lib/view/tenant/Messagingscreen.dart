@@ -1,97 +1,217 @@
 import 'package:flutter/material.dart';
-import '../../model/MessageModel.dart';
+import '../../viewmodel/chatviewmodel.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class MessagingScreen extends StatefulWidget {
-  // 從 StatelessWidget 改成 StatefulWidget
-  const MessagingScreen({super.key});
+  // 1. 修正：这里必须要求传入 chatTarget
+  final String chatTarget;
+  const MessagingScreen({super.key, required this.chatTarget});
 
   @override
   State<MessagingScreen> createState() => _MessagingScreenState();
 }
 
 class _MessagingScreenState extends State<MessagingScreen> {
-  // 1. 定義控制器，用來拿輸入框的字
   final TextEditingController _controller = TextEditingController();
+  final ChatViewModel _viewModel = ChatViewModel();
 
-  // 2. 把 dummyMessages 搬進 State，這樣它才能被修改
-  final List<MessageModel> _messages = [
-    MessageModel(
-      senderId: 'admin',
-      text: "Hello! I have a question about my utility bill.",
-      timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
-    ),
-    MessageModel(
-      senderId: 'tenant',
-      text: "Sure, let me check that for you. Which month?",
-      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // 2. 关键：页面初始化时，告诉 ViewModel 现在的房间名是什么
+    // 注意：这里的 chatTarget 必须和你 ViewModel 里的变量名大小写一致
+    _viewModel.chatTarget = widget.chatTarget;
+  }
 
-  // 3. 發送訊息的邏輯
   void _sendMessage() {
-    if (_controller.text.trim().isEmpty) return; // 如果沒打字，不准發送
+    if (_controller.text.trim().isEmpty) return;
+    _viewModel.sendNewMessage(_controller.text);
+    _controller.clear();
+  }
 
-    setState(() {
-      _messages.add(
-        MessageModel(
-          senderId: 'tenant',
-          text: _controller.text,
-          timestamp: DateTime.now(),
-        ),
-      );
-    });
-    _controller.clear(); // 發完後清空輸入框
+  String _formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return "...";
+    DateTime dateTime = timestamp.toDate();
+    return DateFormat('HH:mm').format(dateTime);
   }
 
   @override
   Widget build(BuildContext context) {
+    // 3. 动态设置标题
+    String appBarTitle = widget.chatTarget == 'manager_chats'
+        ? "Manager Chat"
+        : "Owner Chat";
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Manager Chat"),
+        title: Text(
+          appBarTitle,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: const Color(0xFF0A4E9A),
+        centerTitle: true,
       ),
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length, // 使用 _messages 列表
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                return _buildChatBubble(msg.text, msg.senderId == 'tenant');
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _viewModel.messagesStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text("Connection Error"));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data!.docs;
+
+                return ListView.builder(
+                  reverse: true,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    final bool isMe = data['senderId'] == 'tenant_user';
+                    final String timeStr = _formatTimestamp(
+                      data['timestamp'] as Timestamp?,
+                    );
+
+                    return _buildChatBubble(data['text'] ?? '', isMe, timeStr);
+                  },
+                );
               },
             ),
           ),
+          _buildInputArea(),
+        ],
+      ),
+    );
+  }
 
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            decoration: BoxDecoration(color: Colors.white),
-            child: Row(
-              children: [
-                IconButton(icon: const Icon(Icons.photo), onPressed: () {}),
-                Expanded(
-                  child: TextField(
-                    controller: _controller, // 綁定控制器
-                    decoration: InputDecoration(
-                      hintText: "Type a message...",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline, color: Colors.grey),
+              onPressed: () {},
+            ),
+            Expanded(
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: "Type a message...",
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: const Color(0xFFF0F2F5),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: _sendMessage,
+              child: const CircleAvatar(
+                backgroundColor: Color(0xFF0A4E9A),
+                child: Icon(Icons.send, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatBubble(String text, bool isMe, String time) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: isMe
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe) _buildAvatar(isMe),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isMe ? const Color(0xFF0A4E9A) : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isMe ? 18 : 0),
+                      bottomRight: Radius.circular(isMe ? 0 : 18),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
+                    ],
+                  ),
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      color: isMe ? Colors.white : Colors.black87,
+                      fontSize: 15,
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF0A4E9A)),
-                  onPressed: _sendMessage, // 點擊呼叫發送邏輯
-                ),
-              ],
+              ),
+              const SizedBox(width: 8),
+              if (isMe) _buildAvatar(isMe),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              top: 4,
+              left: isMe ? 0 : 48,
+              right: isMe ? 48 : 0,
+            ),
+            child: Text(
+              time,
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
             ),
           ),
         ],
@@ -99,53 +219,14 @@ class _MessagingScreenState extends State<MessagingScreen> {
     );
   }
 
-  Widget _buildChatBubble(String text, bool isMe) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: isMe
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMe)
-            const Padding(
-              padding: EdgeInsets.only(right: 8.0),
-              child: CircleAvatar(
-                radius: 16,
-                backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150',
-                ),
-              ),
-            ),
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isMe ? const Color(0xFF0A4E9A) : Colors.grey[300],
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(15),
-                  topRight: const Radius.circular(15),
-                  bottomLeft: Radius.circular(isMe ? 15 : 0),
-                  bottomRight: Radius.circular(isMe ? 0 : 15),
-                ),
-              ),
-              child: Text(
-                text,
-                style: TextStyle(color: isMe ? Colors.white : Colors.black),
-              ),
-            ),
-          ),
-          if (isMe)
-            const Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.blueAccent,
-                child: Icon(Icons.person, size: 16, color: Colors.white),
-              ),
-            ),
-        ],
+  Widget _buildAvatar(bool isMe) {
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor: isMe ? const Color(0xFF4A90E2) : Colors.grey[400],
+      child: Icon(
+        isMe ? Icons.person : Icons.support_agent,
+        size: 18,
+        color: Colors.white,
       ),
     );
   }
