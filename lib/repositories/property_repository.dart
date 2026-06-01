@@ -1,5 +1,6 @@
 import '../models/property_model.dart';
 import '../models/user_model.dart';
+import '../models/property_rating_model.dart';
 
 abstract class PropertyRepository {
   Future<PropertyModel> addProperty(PropertyModel property);
@@ -10,4 +11,6 @@ abstract class PropertyRepository {
   Future<List<UserModel>> getManagersForProperty(String propertyId);
   Future<void> addManagerToProperty(String propertyId, String managerEmail);
   Future<void> removeManagerFromProperty(String propertyId, String managerId);
+
+  Future<List<PropertyRatingModel>> getRatingsForProperty(String propertyId);
 }

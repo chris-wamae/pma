@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/property_model.dart';
 import '../../viewmodels/owner_property_viewmodel.dart';
 import 'edit_property_manager.dart';
+import 'property_ratings_screen.dart';
 
 class EditPropertyScreen extends StatefulWidget {
   final PropertyModel property;
@@ -102,6 +103,20 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                       );
                     },
                     child: const Text('Managers'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PropertyRatingsScreen(
+                            propertyId: widget.property.id,
+                            viewModel: vm,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Ratings'),
                   ),
                 ],
               ),

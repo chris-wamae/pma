@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/property_model.dart';
 import '../models/user_model.dart';
+import '../models/property_rating_model.dart';
 import '../repositories/property_repository.dart';
 import '../repositories/local_property_repository.dart';
 import '../services/auth_service.dart';
@@ -17,6 +18,11 @@ class OwnerPropertyViewModel extends ChangeNotifier {
   List<UserModel> propertyManagers = [];
   bool isManagersLoading = false;
   String? managerError;
+
+  // State for property ratings
+  List<PropertyRatingModel> propertyRatings = [];
+  bool isRatingsLoading = false;
+  String? ratingsError;
 
   OwnerPropertyViewModel([PropertyRepository? repo, AuthService? authSvc]) 
       : _repo = repo ?? propertyRepository, 
@@ -127,6 +133,22 @@ class OwnerPropertyViewModel extends ChangeNotifier {
       managerError = e.toString();
       notifyListeners();
       return false;
+    }
+  }
+
+  // --- Property Ratings Management ---
+
+  Future<void> loadRatingsForProperty(String propertyId) async {
+    isRatingsLoading = true;
+    ratingsError = null;
+    notifyListeners();
+    try {
+      propertyRatings = await _repo.getRatingsForProperty(propertyId);
+    } catch (e) {
+      ratingsError = e.toString();
+    } finally {
+      isRatingsLoading = false;
+      notifyListeners();
     }
   }
 }

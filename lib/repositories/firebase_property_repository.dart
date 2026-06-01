@@ -2,17 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'property_repository.dart';
 import '../models/property_model.dart';
 import '../models/user_model.dart';
+import '../models/property_rating_model.dart';
 
 class FirebasePropertyRepository implements PropertyRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'properties';
   final String _managersCollection = 'property_managers';
   final String _usersCollection = 'users';
+  final String _ratingsCollection = 'property_ratings';
 
   @override
   Future<PropertyModel> addProperty(PropertyModel property) async {
     try {
-      await _firestore.collection(_collection).doc(property.id).set(property.toJson());
+      await _firestore
+          .collection(_collection)
+          .doc(property.id)
+          .set(property.toJson());
       return property;
     } catch (e) {
       throw Exception('Failed to add property to Firebase: $e');
@@ -30,14 +35,19 @@ class FirebasePropertyRepository implements PropertyRepository {
           .map((doc) => PropertyModel.fromJson(doc.data()))
           .toList();
     } catch (e) {
-      throw Exception('Failed to fetch properties for owner $ownerId from Firebase: $e');
+      throw Exception(
+        'Failed to fetch properties for owner $ownerId from Firebase: $e',
+      );
     }
   }
 
   @override
   Future<void> updateProperty(PropertyModel property) async {
     try {
-      await _firestore.collection(_collection).doc(property.id).update(property.toJson());
+      await _firestore
+          .collection(_collection)
+          .doc(property.id)
+          .update(property.toJson());
     } catch (e) {
       throw Exception('Failed to update property in Firebase: $e');
     }
@@ -63,7 +73,10 @@ class FirebasePropertyRepository implements PropertyRepository {
       final List<UserModel> managers = [];
       for (var doc in managerSnapshot.docs) {
         final managerId = doc.data()['managerId'];
-        final userDoc = await _firestore.collection(_usersCollection).doc(managerId).get();
+        final userDoc = await _firestore
+            .collection(_usersCollection)
+            .doc(managerId)
+            .get();
         if (userDoc.exists) {
           managers.add(UserModel.fromJson(userDoc.data()!));
         }
@@ -75,7 +88,10 @@ class FirebasePropertyRepository implements PropertyRepository {
   }
 
   @override
-  Future<void> addManagerToProperty(String propertyId, String managerEmail) async {
+  Future<void> addManagerToProperty(
+    String propertyId,
+    String managerEmail,
+  ) async {
     try {
       // 1. Find user by email
       final userSnapshot = await _firestore
@@ -110,7 +126,10 @@ class FirebasePropertyRepository implements PropertyRepository {
   }
 
   @override
-  Future<void> removeManagerFromProperty(String propertyId, String managerId) async {
+  Future<void> removeManagerFromProperty(
+    String propertyId,
+    String managerId,
+  ) async {
     try {
       final snapshot = await _firestore
           .collection(_managersCollection)
@@ -127,6 +146,24 @@ class FirebasePropertyRepository implements PropertyRepository {
       }
     } catch (e) {
       throw Exception('Failed to remove manager from property: $e');
+    }
+  }
+
+  @override
+  Future<List<PropertyRatingModel>> getRatingsForProperty(
+    String propertyId,
+  ) async {
+    try {
+      final snapshot = await _firestore
+          .collection(_ratingsCollection)
+          .where('propertyId', isEqualTo: propertyId)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => PropertyRatingModel.fromJson(doc.data()))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch ratings for property $propertyId: $e');
     }
   }
 }

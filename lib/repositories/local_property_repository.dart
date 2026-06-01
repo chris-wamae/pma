@@ -1,11 +1,13 @@
 import 'property_repository.dart';
 import '../models/property_model.dart';
 import '../models/user_model.dart';
+import '../models/property_rating_model.dart';
 
 class LocalPropertyRepository implements PropertyRepository {
   final Map<String, PropertyModel> _store = {};
   final Map<String, List<UserModel>> _managersStore = {}; // propertyId -> list of managers
   final Map<String, UserModel> _usersStore = {}; // userId -> user (mock users)
+  final Map<String, List<PropertyRatingModel>> _ratingsStore = {}; // propertyId -> list of ratings
 
   @override
   Future<PropertyModel> addProperty(PropertyModel property) async {
@@ -17,6 +19,7 @@ class LocalPropertyRepository implements PropertyRepository {
   Future<void> deleteProperty(String id) async {
     _store.remove(id);
     _managersStore.remove(id);
+    _ratingsStore.remove(id);
   }
 
   @override
@@ -58,5 +61,10 @@ class LocalPropertyRepository implements PropertyRepository {
     if (managers == null) throw Exception('No managers found for this property.');
     
     managers.removeWhere((u) => u.uid == managerId);
+  }
+
+  @override
+  Future<List<PropertyRatingModel>> getRatingsForProperty(String propertyId) async {
+    return _ratingsStore[propertyId] ?? [];
   }
 }
