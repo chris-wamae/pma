@@ -97,7 +97,7 @@ class OwnerDashboard extends StatelessWidget {
                 const Text('Recent Properties', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
 
-                ...vm.properties.map((p) => Card(
+                ...vm.properties.take(5).map((p) => Card(
                       child: ListTile(
                         title: Text(p.name),
                         subtitle: Text(p.address ?? ''),

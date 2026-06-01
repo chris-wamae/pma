@@ -13,7 +13,7 @@ class OwnerPropertyViewModel extends ChangeNotifier {
   String? error;
 
   OwnerPropertyViewModel([PropertyRepository? repo, AuthService? authSvc]) 
-      : _repo = repo ?? LocalPropertyRepository(), 
+      : _repo = repo ?? propertyRepository, 
         _authService = authSvc ?? authService;
 
   Future<void> loadProperties() async {
