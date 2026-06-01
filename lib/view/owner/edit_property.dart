@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/property_model.dart';
 import '../../viewmodels/owner_property_viewmodel.dart';
+import 'edit_property_manager.dart';
 
 class EditPropertyScreen extends StatefulWidget {
   final PropertyModel property;
@@ -63,26 +64,46 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                 },
               ),
               const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () async {
-                  if (!(_formKey.currentState?.validate() ?? false)) return;
-                  final updated = PropertyModel(
-                    id: widget.property.id,
-                    ownerId: widget.property.ownerId,
-                    name: _name.text.trim(),
-                    address: _address.text.trim().isEmpty ? null : _address.text.trim(),
-                    units: int.tryParse(_units.text) ?? widget.property.units,
-                  );
-                  final ok = await vm.updateProperty(updated);
-                  if (ok) {
-                    if (!mounted) return;
-                    Navigator.pop(context, true);
-                  } else {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.error ?? 'Failed to update property')));
-                  }
-                },
-                child: const Text('Save'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (!(_formKey.currentState?.validate() ?? false)) return;
+                      final updated = PropertyModel(
+                        id: widget.property.id,
+                        ownerId: widget.property.ownerId,
+                        name: _name.text.trim(),
+                        address: _address.text.trim().isEmpty ? null : _address.text.trim(),
+                        units: int.tryParse(_units.text) ?? widget.property.units,
+                        createdAt: widget.property.createdAt,
+                      );
+                      final ok = await vm.updateProperty(updated);
+                      if (ok) {
+                        if (!mounted) return;
+                        Navigator.pop(context, true);
+                      } else {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.error ?? 'Failed to update property')));
+                      }
+                    },
+                    child: const Text('Save'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EditPropertyManagerScreen(
+                            propertyId: widget.property.id,
+                            viewModel: vm,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Managers'),
+                  ),
+                ],
               ),
             ],
           ),
