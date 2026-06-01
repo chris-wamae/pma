@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/property_model.dart';
 import '../models/user_model.dart';
 import '../models/property_rating_model.dart';
+import '../models/property_issue_model.dart';
 import '../repositories/property_repository.dart';
 import '../repositories/local_property_repository.dart';
 import '../services/auth_service.dart';
@@ -23,6 +24,11 @@ class OwnerPropertyViewModel extends ChangeNotifier {
   List<PropertyRatingModel> propertyRatings = [];
   bool isRatingsLoading = false;
   String? ratingsError;
+
+  // State for property issues
+  List<PropertyIssueModel> propertyIssues = [];
+  bool isIssuesLoading = false;
+  String? issuesError;
 
   OwnerPropertyViewModel([PropertyRepository? repo, AuthService? authSvc]) 
       : _repo = repo ?? propertyRepository, 
@@ -149,6 +155,34 @@ class OwnerPropertyViewModel extends ChangeNotifier {
     } finally {
       isRatingsLoading = false;
       notifyListeners();
+    }
+  }
+
+  // --- Property Issues Management ---
+
+  Future<void> loadPropertyIssues(String propertyId) async {
+    isIssuesLoading = true;
+    issuesError = null;
+    notifyListeners();
+    try {
+      propertyIssues = await _repo.getPropertyIssues(propertyId);
+    } catch (e) {
+      issuesError = e.toString();
+    } finally {
+      isIssuesLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateIssueStatus(String issueId, String newStatus) async {
+    try {
+      await _repo.updateIssueStatus(issueId, newStatus);
+      notifyListeners(); 
+      return true;
+    } catch (e) {
+      issuesError = e.toString();
+      notifyListeners();
+      return false;
     }
   }
 }

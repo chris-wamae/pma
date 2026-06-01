@@ -2,12 +2,14 @@ import 'property_repository.dart';
 import '../models/property_model.dart';
 import '../models/user_model.dart';
 import '../models/property_rating_model.dart';
+import '../models/property_issue_model.dart';
 
 class LocalPropertyRepository implements PropertyRepository {
   final Map<String, PropertyModel> _store = {};
   final Map<String, List<UserModel>> _managersStore = {}; // propertyId -> list of managers
   final Map<String, UserModel> _usersStore = {}; // userId -> user (mock users)
   final Map<String, List<PropertyRatingModel>> _ratingsStore = {}; // propertyId -> list of ratings
+  final Map<String, List<PropertyIssueModel>> _issuesStore = {}; // propertyId -> list of issues
 
   @override
   Future<PropertyModel> addProperty(PropertyModel property) async {
@@ -20,6 +22,7 @@ class LocalPropertyRepository implements PropertyRepository {
     _store.remove(id);
     _managersStore.remove(id);
     _ratingsStore.remove(id);
+    _issuesStore.remove(id);
   }
 
   @override
@@ -66,5 +69,33 @@ class LocalPropertyRepository implements PropertyRepository {
   @override
   Future<List<PropertyRatingModel>> getRatingsForProperty(String propertyId) async {
     return _ratingsStore[propertyId] ?? [];
+  }
+
+  @override
+  Future<List<PropertyIssueModel>> getPropertyIssues(String propertyId) async {
+    return _issuesStore[propertyId] ?? [];
+  }
+
+  @override
+  Future<void> updateIssueStatus(String issueId, String newStatus) async {
+    for (final entry in _issuesStore.entries) {
+      final idx = entry.value.indexWhere((i) => i.id == issueId);
+      if (idx != -1) {
+        final old = entry.value[idx];
+        final updated = PropertyIssueModel(
+          id: old.id,
+          propertyId: old.propertyId,
+          title: old.title,
+          description: old.description,
+          cost: old.cost,
+          date: old.date,
+          status: newStatus,
+        );
+        entry.value[idx] = updated;
+        return;
+      }
+    }
+
+    throw Exception('Issue with id $issueId not found');
   }
 }

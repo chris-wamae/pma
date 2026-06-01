@@ -3,6 +3,7 @@ import 'property_repository.dart';
 import '../models/property_model.dart';
 import '../models/user_model.dart';
 import '../models/property_rating_model.dart';
+import '../models/property_issue_model.dart';
 
 class FirebasePropertyRepository implements PropertyRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -10,6 +11,7 @@ class FirebasePropertyRepository implements PropertyRepository {
   final String _managersCollection = 'property_managers';
   final String _usersCollection = 'users';
   final String _ratingsCollection = 'property_ratings';
+  final String _issuesCollection = 'owner_property_issues';
 
   @override
   Future<PropertyModel> addProperty(PropertyModel property) async {
@@ -164,6 +166,36 @@ class FirebasePropertyRepository implements PropertyRepository {
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch ratings for property $propertyId: $e');
+    }
+  }
+
+  @override
+  Future<List<PropertyIssueModel>> getPropertyIssues(String propertyId) async {
+    try {
+      final snapshot = await _firestore
+          .collection(_issuesCollection)
+          .where('propertyId', isEqualTo: propertyId)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => PropertyIssueModel.fromJson({
+                ...doc.data(),
+                'id': doc.id,
+              }))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch issues for property $propertyId: $e');
+    }
+  }
+
+  @override
+  Future<void> updateIssueStatus(String issueId, String newStatus) async {
+    try {
+      await _firestore.collection(_issuesCollection).doc(issueId).update({
+        'status': newStatus,
+      });
+    } catch (e) {
+      throw Exception('Failed to update issue status: $e');
     }
   }
 }

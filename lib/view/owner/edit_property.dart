@@ -3,6 +3,7 @@ import '../../models/property_model.dart';
 import '../../viewmodels/owner_property_viewmodel.dart';
 import 'edit_property_manager.dart';
 import 'property_ratings_screen.dart';
+import 'owner_property_issues_screen.dart';
 
 class EditPropertyScreen extends StatefulWidget {
   final PropertyModel property;
@@ -65,8 +66,10 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                 },
               ),
               const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
                 children: [
                   ElevatedButton(
                     onPressed: () async {
@@ -117,6 +120,20 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                       );
                     },
                     child: const Text('Ratings'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => OwnerPropertyIssuesScreen(
+                            propertyId: widget.property.id,
+                            viewModel: vm,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Issues'),
                   ),
                 ],
               ),
