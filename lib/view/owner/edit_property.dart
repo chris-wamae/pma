@@ -68,6 +68,7 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                   if (!(_formKey.currentState?.validate() ?? false)) return;
                   final updated = PropertyModel(
                     id: widget.property.id,
+                    ownerId: widget.property.ownerId,
                     name: _name.text.trim(),
                     address: _address.text.trim().isEmpty ? null : _address.text.trim(),
                     units: int.tryParse(_units.text) ?? widget.property.units,

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/file_viewmodel.dart';
+import 'viewmodels/owner_property_viewmodel.dart';
 import 'repositories/file_repository.dart';
+import 'repositories/firebase_property_repository.dart';
 import 'view/authentication/login.dart';
 import 'view/authentication/register.dart';
 import 'view/authentication/otp.dart';
@@ -15,13 +18,18 @@ import 'view/tenant/TenantDashboard.dart';
 import 'view/general/general_dashboard.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(
           create: (_) => FileViewModel(fileRepository: FileRepository()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => OwnerPropertyViewModel(FirebasePropertyRepository()),
         ),
       ],
       child: const MyApp(),

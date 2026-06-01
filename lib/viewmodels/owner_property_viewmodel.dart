@@ -1,20 +1,30 @@
 import 'package:flutter/material.dart';
 import '../models/property_model.dart';
 import '../repositories/property_repository.dart';
+import '../repositories/local_property_repository.dart';
+import '../services/auth_service.dart';
+import '../services/service_locator.dart';
 
 class OwnerPropertyViewModel extends ChangeNotifier {
   final PropertyRepository _repo;
+  final AuthService _authService;
   List<PropertyModel> properties = [];
   bool isLoading = false;
   String? error;
 
-  OwnerPropertyViewModel([PropertyRepository? repo]) : _repo = repo ?? PropertyRepository();
+  OwnerPropertyViewModel([PropertyRepository? repo, AuthService? authSvc]) 
+      : _repo = repo ?? LocalPropertyRepository(), 
+        _authService = authSvc ?? authService;
 
   Future<void> loadProperties() async {
     isLoading = true;
     notifyListeners();
     try {
-      properties = await _repo.listProperties();
+      final user = await _authService.getCurrentUser();
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+      properties = await _repo.listProperties(user.uid);
     } catch (e) {
       error = e.toString();
     } finally {
@@ -25,8 +35,21 @@ class OwnerPropertyViewModel extends ChangeNotifier {
 
   Future<bool> addProperty(PropertyModel p) async {
     try {
-      await _repo.addProperty(p);
-      properties.add(p);
+      // Ensure the property has the correct ownerId before saving
+      final user = await _authService.getCurrentUser();
+      if (user == null) throw Exception('User not authenticated');
+      
+      final propertyWithOwner = PropertyModel(
+        id: p.id,
+        ownerId: user.uid,
+        name: p.name,
+        address: p.address,
+        units: p.units,
+        createdAt: p.createdAt,
+      );
+
+      await _repo.addProperty(propertyWithOwner);
+      properties.add(propertyWithOwner);
       notifyListeners();
       return true;
     } catch (e) {

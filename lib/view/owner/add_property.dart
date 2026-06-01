@@ -58,6 +58,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                 final id = Uuid().v4();
                 final p = PropertyModel(
                   id: id,
+                  ownerId: '', // Handled by ViewModel
                   name: _name.text.trim(),
                   address: _address.text.trim().isEmpty ? null : _address.text.trim(),
                   units: int.tryParse(_units.text) ?? 1,
