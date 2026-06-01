@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pma/view/tenant/ChatListScreen.dart';
 import 'package:pma/view/tenant/TenantDocumentPage.dart';
 import 'Messagingscreen.dart';
 import 'Maintanence.dart';
@@ -227,7 +228,10 @@ class TenantDashboard extends StatelessWidget {
                   );
                 }),
                 _buildActionButton(Icons.message, "Messaging", () {
-                  _showChatSelection(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ChatListScreen()),
+                  );
                 }),
               ],
             ),

@@ -5,6 +5,7 @@ import 'property_list.dart';
 import 'add_property.dart';
 import 'edit_property.dart';
 import '../general/file_management_screen.dart'; // Import FileManagementScreen
+import '../tenant/ChatListScreen.dart';
 
 class OwnerDashboard extends StatelessWidget {
   const OwnerDashboard({super.key});
@@ -14,7 +15,20 @@ class OwnerDashboard extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => OwnerPropertyViewModel()..loadProperties(),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Owner Dashboard')),
+        appBar: AppBar(
+          title: const Text('Owner Dashboard'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.chat),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ChatListScreen()),
+                );
+              },
+            ),
+          ],
+        ),
         body: Consumer<OwnerPropertyViewModel>(builder: (context, vm, _) {
           if (vm.isLoading) return const Center(child: CircularProgressIndicator());
 
@@ -57,7 +71,6 @@ class OwnerDashboard extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // navigate to add property screen using the existing provider
                           Navigator.push(context, MaterialPageRoute(builder: (_) => AddPropertyScreen(viewModel: Provider.of<OwnerPropertyViewModel>(context, listen: false))));
                         },
                         icon: const Icon(Icons.add),
@@ -67,7 +80,7 @@ class OwnerDashboard extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 10), // Add spacing between rows of buttons
+                const SizedBox(height: 10),
 
                 Row(
                   children: [
@@ -78,15 +91,28 @@ class OwnerDashboard extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) => FileManagementScreen(
-                                entityId: 'owner_dashboard_id', // Placeholder, needs actual ID
-                                entityType: 'owner', // Placeholder, needs actual type
-                                uploadedBy: 'current_user_id', // Placeholder, needs actual user
+                                entityId: 'owner_dashboard_id',
+                                entityType: 'owner',
+                                uploadedBy: 'current_user_id',
                               ),
                             ),
                           );
                         },
                         icon: const Icon(Icons.folder),
                         label: const Text('File Management'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ChatListScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.chat),
+                        label: const Text('Messaging'),
                       ),
                     ),
                   ],

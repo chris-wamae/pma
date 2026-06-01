@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../viewmodel/chatviewmodel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MessagingScreen extends StatefulWidget {
   // 1. 修正：这里必须要求传入 chatTarget
@@ -20,8 +21,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
   void initState() {
     super.initState();
     // 2. 关键：页面初始化时，告诉 ViewModel 现在的房间名是什么
-    // 注意：这里的 chatTarget 必须和你 ViewModel 里的变量名大小写一致
-    _viewModel.chatTarget = widget.chatTarget;
+    _viewModel.setChatRoom(widget.chatTarget);
   }
 
   void _sendMessage() {
@@ -75,6 +75,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
                 }
 
                 final docs = snapshot.data!.docs;
+                final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
                 return ListView.builder(
                   reverse: true,
@@ -85,7 +86,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
-                    final bool isMe = data['senderId'] == 'tenant_user';
+                    final bool isMe = data['senderId'] == currentUserId;
                     final String timeStr = _formatTimestamp(
                       data['timestamp'] as Timestamp?,
                     );

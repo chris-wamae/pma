@@ -14,6 +14,7 @@ import 'package:pma/view/manager/property_rating_screen.dart';
 import 'package:pma/view/manager/priority_requests_screen.dart';
 import 'package:pma/view/manager/rent_collection_screen.dart';
 import 'package:pma/view/manager/request_details_screen.dart';
+import 'package:pma/view/tenant/ChatListScreen.dart';
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
@@ -407,7 +408,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
             case 3:
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CommunicationScreen()),
+                MaterialPageRoute(builder: (_) => const ChatListScreen()),
               );
               break;
 
