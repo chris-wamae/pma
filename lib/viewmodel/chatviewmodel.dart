@@ -17,8 +17,8 @@ class ChatViewModel extends ChangeNotifier {
   // Stream for the current user's active conversations
   Stream<QuerySnapshot> get conversationsStream {
     final String? uid = FirebaseAuth.instance.currentUser?.uid;
-    return uid != null 
-        ? _repository.getConversations(uid) 
+    return uid != null
+        ? _repository.getConversations(uid)
         : const Stream.empty();
   }
 
@@ -50,15 +50,18 @@ class ChatViewModel extends ChangeNotifier {
       }
 
       // 2. Check if conversation already exists or create a new one
-      final String chatId = _repository.getChatIdForUsers(myUid, targetUser.uid);
+      final String chatId = _repository.getChatIdForUsers(
+        myUid,
+        targetUser.uid,
+      );
 
-      // Create a simple UserModel for the current user to initialize the conversation record
+      // Create a simple UserModel for the current user
       final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-      final currentUserName = "Me"; // In a real app, this would come from the current user's profile
+      final currentUserName = "Me";
 
       await _repository.createConversation(
-        UserModel(uid: currentUserId, email: '', name: currentUserName), 
-        targetUser
+        UserModel(uid: currentUserId, email: '', name: currentUserName),
+        targetUser,
       );
 
       return chatId;
@@ -85,22 +88,27 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
-  /// Helper to get the name of the other participant in a conversation.
   String getOtherParticipantName(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final List<String> participants = data['participants'] as List<String>;
-    final Map<String, String> names = data['participantNames'] as Map<String, String>;
-    final String? myUid = FirebaseAuth.instance.currentUser?.uid;
 
-    if (myUid == null) return "Unknown";
-
-    // Find the UID that isn't mine
-    final String otherUid = participants.firstWhere(
-      (id) => id != myUid, 
-      orElse: () => ""
+    final List<String> participants = List<String>.from(
+      data['participants'] ?? [],
     );
 
-    return names[otherUid] ?? "Unknown User";
+    final Map<String, dynamic> names =
+        data['participantNames'] as Map<String, dynamic>? ?? {};
+
+    final String? myUid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (myUid == null || participants.isEmpty) return "Unknown User";
+
+    final String otherUid = participants.firstWhere(
+      (id) => id != myUid,
+      orElse: () => "",
+    );
+
+    if (otherUid.isEmpty) return "Me";
+
+    return names[otherUid]?.toString() ?? "Unknown User";
   }
 }
-

@@ -12,17 +12,171 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  final TextEditingController _emailController = TextEditingController();
   final ChatViewModel _viewModel = ChatViewModel();
 
-  void _startNewChat() async {
-    final email = _emailController.text.trim();
-    if (email.isEmpty) return;
+  void _showManagerPicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Select a Manager",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .where('role', isEqualTo: 'Manager')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError)
+                    return const Text("Error loading managers");
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final managers = snapshot.data?.docs ?? [];
+
+                  if (managers.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text("No managers available at the moment."),
+                    );
+                  }
+
+                  return Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: managers.length,
+                      itemBuilder: (context, index) {
+                        final data =
+                            managers[index].data() as Map<String, dynamic>;
+                        final String name = data['name'] ?? 'Unknown Manager';
+                        final String email = data['email'] ?? '';
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: const Color(
+                              0xFF0A4E9A,
+                            ).withOpacity(0.1),
+                            child: const Icon(
+                              Icons.support_agent,
+                              color: Color(0xFF0A4E9A),
+                            ),
+                          ),
+                          title: Text(name),
+                          subtitle: Text(email),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _quickStartChat(email, name);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showOwnerPicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Select an Owner",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .where('role', isEqualTo: 'Owner')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError)
+                    return const Text("Error loading owners");
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final owners = snapshot.data?.docs ?? [];
+
+                  if (owners.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text("No owners available at the moment."),
+                    );
+                  }
+
+                  return Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: owners.length,
+                      itemBuilder: (context, index) {
+                        final data =
+                            owners[index].data() as Map<String, dynamic>;
+                        final String name = data['name'] ?? 'Unknown Owner';
+                        final String email = data['email'] ?? '';
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.orange.withOpacity(0.1),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.orange,
+                            ),
+                          ),
+                          title: Text(name),
+                          subtitle: Text(email),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _quickStartChat(email, name);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _quickStartChat(String email, String roleName) async {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("Connecting to $roleName...")));
 
     final String? chatId = await _viewModel.startChatByEmail(email);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
     if (chatId != null) {
-      _emailController.clear();
-      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -30,9 +184,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ),
       );
     } else {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User not found or error starting chat")),
+        SnackBar(content: Text("Error: Could not start chat with $email")),
       );
     }
   }
@@ -44,6 +197,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A4E9A),
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Messages",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -52,23 +206,23 @@ class _ChatListScreenState extends State<ChatListScreen> {
       ),
       body: Column(
         children: [
-          _buildSearchHeader(),
+          _buildQuickContactHeader(),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _viewModel.conversationsStream,
               builder: (context, snapshot) {
-                if (snapshot.hasError) {
+                if (snapshot.hasError)
                   return const Center(child: Text("Error loading chats"));
-                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 final docs = snapshot.data?.docs ?? [];
-
                 if (docs.isEmpty) {
                   return const Center(
-                    child: Text("No active conversations"),
+                    child: Text(
+                      "No active conversations. Click above to start!",
+                    ),
                   );
                 }
 
@@ -80,9 +234,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     final data = doc.data() as Map<String, dynamic>;
                     final String chatId = doc.id;
                     final String name = _viewModel.getOtherParticipantName(doc);
-                    final String lastMsg = data['lastMessage'] ?? 'No messages yet';
+                    final String lastMsg =
+                        data['lastMessage'] ?? 'No messages yet';
                     final Timestamp? time = data['lastTimestamp'] as Timestamp?;
-
                     return _buildChatTile(name, lastMsg, time, chatId);
                   },
                 );
@@ -94,7 +248,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 
-  Widget _buildSearchHeader() {
+  Widget _buildQuickContactHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
@@ -108,40 +262,84 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                hintText: "Enter email to start chat...",
-                filled: true,
-                fillColor: const Color(0xFFF0F2F5),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-              ),
+          const Text(
+            "Contact Support",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
             ),
           ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: _startNewChat,
-            child: const CircleAvatar(
-              backgroundColor: Color(0xFF0A4E9A),
-              child: Icon(Icons.chat, color: Colors.white, size: 20),
-            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildContactButton(
+                  icon: Icons.support_agent,
+                  label: "Manager",
+                  color: const Color(0xFF0A4E9A),
+                  onTap: _showManagerPicker,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildContactButton(
+                  icon: Icons.person,
+                  label: "Owner",
+                  color: Colors.orange,
+                  onTap: _showOwnerPicker,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChatTile(String name, String msg, Timestamp? time, String chatId) {
+  Widget _buildContactButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatTile(
+    String name,
+    String msg,
+    Timestamp? time,
+    String chatId,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
@@ -152,7 +350,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           radius: 25,
           backgroundColor: const Color(0xFF0A4E9A).withOpacity(0.1),
           child: Text(
-            name[0].toUpperCase(),
+            name.isNotEmpty ? name[0].toUpperCase() : "?",
             style: const TextStyle(
               color: Color(0xFF0A4E9A),
               fontWeight: FontWeight.bold,
@@ -190,7 +388,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
   String _formatTime(Timestamp timestamp) {
     final date = timestamp.toDate();
     final now = DateTime.now();
-    if (date.day == now.day && date.month == now.month && date.year == now.year) {
+    if (date.day == now.day &&
+        date.month == now.month &&
+        date.year == now.year) {
       return "${date.hour}:${date.minute.toString().padLeft(2, '0')}";
     }
     return "${date.day}/${date.month}";
