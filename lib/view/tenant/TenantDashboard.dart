@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pma/view/tenant/ChatListScreen.dart';
 import 'package:pma/view/tenant/TenantDocumentPage.dart';
 import 'Messagingscreen.dart';
 import 'Maintanence.dart';
@@ -8,73 +7,10 @@ import 'TicketPage.dart';
 import 'ProfilePage.dart';
 import 'InvoiceDetail.dart';
 import 'HouseRulesPage.dart';
+import 'ChatListScreen.dart';
 
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
-
-  void _showChatSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Select Contact",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Color(0xFF0A4E9A),
-                  child: Icon(Icons.support_agent, color: Colors.white),
-                ),
-                title: const Text("Chat with Manager"),
-                subtitle: const Text("For maintenance & general inquiries"),
-                onTap: () {
-                  Navigator.pop(context);
-                  // 🚀 关键点：传参 manager_chats
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const MessagingScreen(chatTarget: "manager_chats"),
-                    ),
-                  );
-                },
-              ),
-              const Divider(),
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Colors.orange,
-                  child: Icon(Icons.person, color: Colors.white),
-                ),
-                title: const Text("Chat with Owner"),
-                subtitle: const Text("For contract & payment issues"),
-                onTap: () {
-                  Navigator.pop(context);
-                  // 🚀 关键点：传参 owner_chats
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const MessagingScreen(chatTarget: "owner_chats"),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -201,6 +137,7 @@ class TenantDashboard extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
+                      // ✅ 確保這裡呼叫的是我們寫的 MaintenancePage 類別
                       builder: (context) => const MaintenancePage(),
                     ),
                   );
@@ -230,7 +167,9 @@ class TenantDashboard extends StatelessWidget {
                 _buildActionButton(Icons.message, "Messaging", () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ChatListScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const ChatListScreen(),
+                    ),
                   );
                 }),
               ],

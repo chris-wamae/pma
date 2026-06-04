@@ -14,7 +14,11 @@ class ChatListScreen extends StatefulWidget {
 class _ChatListScreenState extends State<ChatListScreen> {
   final ChatViewModel _viewModel = ChatViewModel();
 
-  void _showManagerPicker() {
+  void _showUserPicker({
+    required String role,
+    required Color color,
+    required IconData icon,
+  }) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -23,66 +27,62 @@ class _ChatListScreenState extends State<ChatListScreen> {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(16),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.6,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "Select a Manager",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                "Select a $role",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .where('role', isEqualTo: 'Manager')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError)
-                    return const Text("Error loading managers");
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .where('role', isEqualTo: role)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError)
+                      return Text("Error loading ${role}s");
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                  final managers = snapshot.data?.docs ?? [];
+                    final users = snapshot.data?.docs ?? [];
+                    if (users.isEmpty) {
+                      return Center(child: Text("No ${role}s available."));
+                    }
 
-                  if (managers.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Text("No managers available at the moment."),
-                    );
-                  }
-
-                  return Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: managers.length,
+                    return ListView.builder(
+                      itemCount: users.length,
                       itemBuilder: (context, index) {
                         final data =
-                            managers[index].data() as Map<String, dynamic>;
-                        final String name = data['name'] ?? 'Unknown Manager';
+                            users[index].data() as Map<String, dynamic>;
+                        final String name = data['name'] ?? 'Unknown $role';
                         final String email = data['email'] ?? '';
 
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: const Color(
-                              0xFF0A4E9A,
-                            ).withOpacity(0.1),
-                            child: const Icon(
-                              Icons.support_agent,
-                              color: Color(0xFF0A4E9A),
-                            ),
+                            backgroundColor: color.withOpacity(0.1),
+                            child: Icon(icon, color: color),
                           ),
                           title: Text(name),
                           subtitle: Text(email),
                           onTap: () {
                             Navigator.pop(context);
-                            _quickStartChat(email, name);
+                            _quickStartChat(email, name); // 🚀 传递选中的名字
                           },
                         );
                       },
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -91,85 +91,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 
-  void _showOwnerPicker() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Select an Owner",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .where('role', isEqualTo: 'Owner')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError)
-                    return const Text("Error loading owners");
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final owners = snapshot.data?.docs ?? [];
-
-                  if (owners.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Text("No owners available at the moment."),
-                    );
-                  }
-
-                  return Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: owners.length,
-                      itemBuilder: (context, index) {
-                        final data =
-                            owners[index].data() as Map<String, dynamic>;
-                        final String name = data['name'] ?? 'Unknown Owner';
-                        final String email = data['email'] ?? '';
-
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.orange.withOpacity(0.1),
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          title: Text(name),
-                          subtitle: Text(email),
-                          onTap: () {
-                            Navigator.pop(context);
-                            _quickStartChat(email, name);
-                          },
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _quickStartChat(String email, String roleName) async {
+  void _quickStartChat(String email, String userName) async {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text("Connecting to $roleName...")));
+    ).showSnackBar(SnackBar(content: Text("Connecting to $userName...")));
 
     final String? chatId = await _viewModel.startChatByEmail(email);
 
@@ -180,7 +105,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MessagingScreen(chatTarget: chatId),
+          builder: (context) => MessagingScreen(
+            chatTarget: chatId,
+            recipientName: userName, // 🚀 传给聊天页面
+          ),
         ),
       );
     } else {
@@ -281,7 +209,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   icon: Icons.support_agent,
                   label: "Manager",
                   color: const Color(0xFF0A4E9A),
-                  onTap: _showManagerPicker,
+                  onTap: () => _showUserPicker(
+                    role: "Manager",
+                    color: const Color(0xFF0A4E9A),
+                    icon: Icons.support_agent,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -290,7 +222,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   icon: Icons.person,
                   label: "Owner",
                   color: Colors.orange,
-                  onTap: _showOwnerPicker,
+                  onTap: () => _showUserPicker(
+                    role: "Owner",
+                    color: Colors.orange,
+                    icon: Icons.person,
+                  ),
                 ),
               ),
             ],
@@ -377,7 +313,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => MessagingScreen(chatTarget: chatId),
+              builder: (context) => MessagingScreen(
+                chatTarget: chatId,
+                recipientName: name, // 🚀 列表点进去也要传人名
+              ),
             ),
           );
         },

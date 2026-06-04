@@ -21,7 +21,6 @@ class InvoiceDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 账单头部卡片 - 更加精致的渐变感
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -89,7 +88,6 @@ class InvoiceDetailPage extends StatelessWidget {
           ],
         ),
       ),
-      // 底部支付按钮
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -103,7 +101,6 @@ class InvoiceDetailPage extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              // 修改点：不再直接弹成功，而是弹出支付方式选择
               _showPaymentSelection(context);
             },
             child: const Text(
@@ -120,7 +117,6 @@ class InvoiceDetailPage extends StatelessWidget {
     );
   }
 
-  // 新增：支付方式选择弹窗 (Bottom Sheet)
   void _showPaymentSelection(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -164,7 +160,6 @@ class InvoiceDetailPage extends StatelessWidget {
     );
   }
 
-  // 辅助组件：支付选项行
   Widget _buildPaymentOption(
     BuildContext context,
     IconData icon,
@@ -183,8 +178,8 @@ class InvoiceDetailPage extends StatelessWidget {
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () {
-        Navigator.pop(context); // 关掉 BottomSheet
-        _showPaymentSuccess(context); // 显示成功弹窗
+        Navigator.pop(context);
+        _showPaymentSuccess(context);
       },
     );
   }
@@ -229,8 +224,8 @@ class InvoiceDetailPage extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () {
-                Navigator.pop(context); // 关掉对话框
-                Navigator.pop(context); // 返回到 Dashboard
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
               child: const Text(
                 "Back to Home",
