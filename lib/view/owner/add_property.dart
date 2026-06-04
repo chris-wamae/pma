@@ -29,7 +29,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
   Widget build(BuildContext context) {
     final vm = widget.viewModel;
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Property')),
+      appBar: AppBar(title: const Text('Add Propert')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

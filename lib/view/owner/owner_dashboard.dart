@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../utils/constants.dart';
 import '../../viewmodels/owner_property_viewmodel.dart';
 import 'property_list.dart';
 import 'add_property.dart';
@@ -42,11 +43,11 @@ class OwnerDashboard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: dashboardBox(propertyCount.toString(), 'Properties', Colors.blue),
+                      child: dashboardBox(propertyCount.toString(), 'Properties', AppColors.primary),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: dashboardBox('-', 'Tenants', Colors.green),
+                      child: dashboardBox('-', 'Tenants', AppColors.accent),
                     ),
                   ],
                 ),
