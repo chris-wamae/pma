@@ -7,123 +7,83 @@ class TicketPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
-        title: const Text("Maintenance Tickets"),
+        title: const Text("My Maintenance Tickets"),
         backgroundColor: const Color(0xFF0A4E9A),
-        iconTheme: const IconThemeData(color: Colors.white),
-        titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        centerTitle: true,
+        foregroundColor: Colors.white,
       ),
-      body: currentUserId == null
-          ? const Center(child: Text("Please log in first."))
-          : StreamBuilder<QuerySnapshot>(
-              // 🛰️ 實時監聽 Chris 指定的維修集合，並且只抓當前登入租客的單子
-              stream: FirebaseFirestore.instance
-                  .collection('property_ratings') // ⚠️ 根據 Chris 的截圖，維修數據在這個集合
-                  .where('tenantId', isEqualTo: currentUserId)
-                  // 如果你在 MaintenancePage 提交時有存 tenantId 的話就可以這樣篩選
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError)
-                  return const Center(child: Text("Error loading tickets"));
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('maintenance_requests')
+            .where('tenantId', isEqualTo: user?.uid)
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                final tickets = snapshot.data?.docs ?? [];
+          final docs = snapshot.data?.docs ?? [];
 
-                if (tickets.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      "No active maintenance tickets found.",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  );
-                }
+          if (docs.isEmpty) {
+            return const Center(child: Text("No tickets found."));
+          }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: tickets.length,
-                  itemBuilder: (context, index) {
-                    final data = tickets[index].data() as Map<String, dynamic>;
-                    final String title = data['title'] ?? 'Maintenance Request';
-                    final String description =
-                        data['description'] ?? 'No description provided';
-                    final String status =
-                        data['status'] ??
-                        'pending'; // pending, progress, completed
-                    final int cost = data['cost'] ?? 0;
-
-                    return _buildTicketCard(title, description, status, cost);
-                  },
-                );
-              },
-            ),
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+              return _buildTicketCard(data);
+            },
+          );
+        },
+      ),
     );
-  }
+  } // <-- 這是 build 函數的結尾
 
-  // 🎨 構建每一個維修單的卡片與進度條
-  Widget _buildTicketCard(
-    String title,
-    String description,
-    String status,
-    int cost,
-  ) {
-    // 根據狀態計算進度條百分比與顏色
-    double progress = 0.2;
-    Color statusColor = Colors.orange;
-    String statusText = "Pending";
-
-    if (status == 'progress' || status == 'In Progress') {
-      progress = 0.6;
-      statusColor = Colors.blue;
-      statusText = "In Progress";
-    } else if (status == 'completed' || status == 'Completed') {
-      progress = 1.0;
-      statusColor = Colors.green;
-      statusText = "Completed";
-    }
+  // ✅ 確保這個函數是在 class 內部
+  Widget _buildTicketCard(Map<String, dynamic> data) {
+    String status = data['status'] ?? 'pending';
+    Color statusColor = status == 'completed' ? Colors.green : Colors.orange;
+    double progress = status == 'completed' ? 1.0 : 0.2;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                Text(
+                  data['category'] ?? 'General',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
+                    horizontal: 8,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    statusText,
+                    status.toUpperCase(),
                     style: TextStyle(
                       color: statusColor,
                       fontWeight: FontWeight.bold,
@@ -133,57 +93,22 @@ class TicketPage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
+            const SizedBox(height: 15),
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[200],
+              color: statusColor,
+              minHeight: 8,
             ),
-            if (cost > 0) ...[
-              const SizedBox(height: 8),
-              Text(
-                "Estimated Cost: RM $cost",
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-
-            // 📊 進度條 UI
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      "Submitted",
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                    Text(
-                      "Fixing",
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                    Text(
-                      "Done",
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Colors.grey[200],
-                  color: statusColor,
-                  minHeight: 6,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ],
+            const SizedBox(height: 10),
+            Text("Description: ${data['description'] ?? ''}"),
+            Text(
+              "Date: ${data['date'] ?? ''}",
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
       ),
     );
   }
-}
+} // <-- 這是整個 class 的唯一結尾
