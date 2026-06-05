@@ -8,6 +8,9 @@ import 'ProfilePage.dart';
 import 'InvoiceDetail.dart';
 import 'HouseRulesPage.dart';
 import 'ChatListScreen.dart';
+import 'RatingPage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
@@ -29,7 +32,10 @@ class TenantDashboard extends StatelessWidget {
             ),
           ),
         ),
-        title: const Text("Welcome! Xiao Xuan", style: TextStyle(fontSize: 16)),
+        title: const Text(
+          "Welcome! Xiao Xuan",
+          style: TextStyle(fontSize: 16, color: Colors.white),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -64,60 +70,120 @@ class TenantDashboard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildInvoiceStat("Unpaid", "RM 250.00", Colors.red),
-                      Container(width: 1, height: 40, color: Colors.grey[300]),
-                      _buildInvoiceStat("Paid", "RM 1200.00", Colors.green),
-                    ],
+
+            // 💡 核心改動：使用 StreamBuilder 即時監聽與計算當前用戶的帳單金額
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('invoices')
+                  .where(
+                    'tenantId',
+                    isEqualTo: FirebaseAuth.instance.currentUser?.uid,
+                  )
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                double totalUnpaid = 0.0;
+                double totalPaid = 0.0;
+
+                if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                  for (var doc in snapshot.data!.docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final double amount = (data['amount'] ?? 0.0).toDouble();
+                    final String status = data['status'] ?? 'unpaid';
+
+                    if (status == 'paid') {
+                      totalPaid += amount;
+                    } else {
+                      totalUnpaid += amount;
+                    }
+                  }
+                }
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const Divider(height: 30),
-                  Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const InvoiceDetailPage(),
-                              ),
-                            );
-                          },
-                          child: const Text("View Details"),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[900],
-                            foregroundColor: Colors.white,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          // 🔴 動態顯示未付總額
+                          _buildInvoiceStat(
+                            "Unpaid",
+                            "RM ${totalUnpaid.toStringAsFixed(2)}",
+                            Colors.red,
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const InvoiceDetailPage(),
+                          Container(
+                            width: 1,
+                            height: 40,
+                            color: Colors.grey[300],
+                          ),
+                          // 🟢 動態顯示已付總額
+                          _buildInvoiceStat(
+                            "Paid",
+                            "RM ${totalPaid.toStringAsFixed(2)}",
+                            Colors.green,
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 30),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => InvoiceDetailPage(
+                                      amountToPay: totalUnpaid,
+                                    ), // 👈 傳遞最新未付總額
+                                  ),
+                                );
+                              },
+                              child: const Text("View Details"),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue[900],
+                                foregroundColor: Colors.white,
                               ),
-                            );
-                          },
-                          child: const Text("Pay Now"),
-                        ),
+                              onPressed: totalUnpaid <= 0
+                                  ? null // 💡 若已付清，按鈕自動變灰無法重複點擊
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              InvoiceDetailPage(
+                                                amountToPay: totalUnpaid,
+                                              ), // 👈 傳遞最新未付總額
+                                        ),
+                                      );
+                                    },
+                              child: const Text("Pay Now"),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             const SizedBox(height: 20),
             const Text(
@@ -125,21 +191,28 @@ class TenantDashboard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
+
+            // 💡 優化佈局比例後的 GridView，確保 6 個按鈕完美顯現
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.5,
+              crossAxisCount: 2, // 一行 2 個
+              crossAxisSpacing: 12, // 左右間距
+              mainAxisSpacing: 12, // 上下間距
+              childAspectRatio: 2.3, // 調整比例讓按鈕扁一點，釋放空間
               children: [
                 _buildActionButton(Icons.build, "Maintenance", () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      // ✅ 確保這裡呼叫的是我們寫的 MaintenancePage 類別
                       builder: (context) => const MaintenancePage(),
                     ),
+                  );
+                }),
+                _buildActionButton(Icons.star, "Rate House", () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RatingPage()),
                   );
                 }),
                 _buildActionButton(Icons.warning, "Report", () {
@@ -174,6 +247,7 @@ class TenantDashboard extends StatelessWidget {
                 }),
               ],
             ),
+            const SizedBox(height: 20), // 底部留白
           ],
         ),
       ),
@@ -222,9 +296,19 @@ class TenantDashboard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: lines
-            .map((line) => Text(line, style: const TextStyle(height: 1.8)))
-            .toList(),
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0A4E9A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...lines.map(
+            (line) => Text(line, style: const TextStyle(height: 1.5)),
+          ),
+        ],
       ),
     );
   }

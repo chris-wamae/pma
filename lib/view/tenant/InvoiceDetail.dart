@@ -1,7 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class InvoiceDetailPage extends StatelessWidget {
-  const InvoiceDetailPage({super.key});
+  final double amountToPay; // 💡 接收從 Dashboard 帶過來的真實動態金額
+
+  // 構造函數：給予 amountToPay 預設值 0.0，這樣從 "View Details" 進來不傳參也不會報錯
+  const InvoiceDetailPage({super.key, this.amountToPay = 0.0});
+
+  // 🔄 處理 Firebase 更新為 paid 的核心函式
+  Future<void> _updateInvoiceStatusInFirebase(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      // 1. 搜尋該登入用戶所有處於 unpaid 狀態的帳單
+      final snapshot = await FirebaseFirestore.instance
+          .collection('invoices')
+          .where('tenantId', isEqualTo: user.uid)
+          .where('status', isEqualTo: 'unpaid')
+          .get();
+
+      // 2. 批次將它們全部更新為 paid 狀態
+      for (var doc in snapshot.docs) {
+        await FirebaseFirestore.instance
+            .collection('invoices')
+            .doc(doc.id)
+            .update({'status': 'paid'});
+      }
+    } catch (e) {
+      debugPrint("Error updating invoices: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,34 +54,44 @@ class InvoiceDetailPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.red[50],
+                color: amountToPay > 0
+                    ? Colors.red[50]
+                    : Colors.green[50], // 💡 若付清了卡片自動轉綠色
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.red[100]!),
+                border: Border.all(
+                  color: amountToPay > 0
+                      ? Colors.red[100]!
+                      : Colors.green[100]!,
+                ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Total Unpaid",
+                        amountToPay > 0 ? "Total Unpaid" : "All Bills Settled",
                         style: TextStyle(
-                          color: Colors.red,
+                          color: amountToPay > 0 ? Colors.red : Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text(
-                        "RM 250.00",
-                        style: TextStyle(
+                        "RM ${amountToPay.toStringAsFixed(2)}", // 👈 顯示實時金額
+                        style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  Icon(Icons.receipt_long, size: 40, color: Colors.red),
+                  Icon(
+                    amountToPay > 0 ? Icons.receipt_long : Icons.check_circle,
+                    size: 40,
+                    color: amountToPay > 0 ? Colors.red : Colors.green,
+                  ),
                 ],
               ),
             ),
@@ -63,15 +103,27 @@ class InvoiceDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // 费用明细列表
+            // 費用明細列表
             _buildPriceItem("Monthly Rental", "RM 1,000.00", isPaid: true),
-            _buildPriceItem("Water Bill (May)", "RM 45.50", isPaid: false),
-            _buildPriceItem("Electricity (May)", "RM 185.00", isPaid: false),
-            _buildPriceItem("Maintenance Fee", "RM 19.50", isPaid: false),
+            _buildPriceItem(
+              "Water Bill (May)",
+              "RM 45.50",
+              isPaid: amountToPay <= 0,
+            ), // 連動狀態
+            _buildPriceItem(
+              "Electricity (May)",
+              "RM 185.00",
+              isPaid: amountToPay <= 0,
+            ),
+            _buildPriceItem(
+              "Maintenance Fee",
+              "RM 19.50",
+              isPaid: amountToPay <= 0,
+            ),
 
             const Divider(height: 40),
 
-            // 支付说明
+            // 支付說明
             const Text(
               "Payment Instructions",
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -100,12 +152,16 @@ class InvoiceDetailPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: () {
-              _showPaymentSelection(context);
-            },
-            child: const Text(
-              "Pay Outstanding (RM 250.00)",
-              style: TextStyle(
+            onPressed: amountToPay <= 0
+                ? null // 💡 如果沒有未付金額，按鈕禁用
+                : () {
+                    _showPaymentSelection(context);
+                  },
+            child: Text(
+              amountToPay > 0
+                  ? "Pay Outstanding (RM ${amountToPay.toStringAsFixed(2)})"
+                  : "Fully Paid",
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -177,9 +233,14 @@ class InvoiceDetailPage extends StatelessWidget {
       ),
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {
-        Navigator.pop(context);
-        _showPaymentSuccess(context);
+      onTap: () async {
+        Navigator.pop(context); // 關閉付款選單 BottomSheet
+
+        // ⚡ 核心連動：使用者點擊任意選項後，背景非同步去更新 Firebase
+        await _updateInvoiceStatusInFirebase(context);
+
+        if (!context.mounted) return;
+        _showPaymentSuccess(context); // 顯示原本寫好的漂亮綠色打勾視窗
       },
     );
   }
@@ -224,8 +285,8 @@ class InvoiceDetailPage extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
+                Navigator.pop(context); // 關閉對話方塊
+                Navigator.pop(context); // 退回首頁 Dashboard
               },
               child: const Text(
                 "Back to Home",

@@ -111,4 +111,4 @@ class TicketPage extends StatelessWidget {
       ),
     );
   }
-} // <-- 這是整個 class 的唯一結尾
+}
