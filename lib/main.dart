@@ -18,7 +18,6 @@ import 'view/manager/manager_dashboard.dart';
 import 'view/tenant/TenantDashboard.dart';
 import 'view/general/general_dashboard.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -59,7 +58,7 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: AppColors.primary),
         ),
       ),
-      home: const LoginScreen(),
+      home: const ManagerDashboard(),
       routes: {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
@@ -71,6 +70,6 @@ class MyApp extends StatelessWidget {
         '/tenant': (_) => const TenantDashboard(),
         '/general': (_) => const GeneralDashboard(),
       },
-    );  
+    );
   }
 }
