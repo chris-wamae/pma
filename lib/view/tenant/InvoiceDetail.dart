@@ -3,9 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class InvoiceDetailPage extends StatelessWidget {
-  final double amountToPay; // 💡 接收從 Dashboard 帶過來的真實動態金額
+  final double amountToPay; // 接收從 Dashboard 帶過來的真實動態金額
 
-  // 構造函數：給予 amountToPay 預設值 0.0，這樣從 "View Details" 進來不傳參也不會報錯
+  // 構造函數：給予 amountToPay 預設值 0.0，這樣從 "View Details" 進來不傳參也能正常打開並看到明細！
   const InvoiceDetailPage({super.key, this.amountToPay = 0.0});
 
   // 🔄 處理 Firebase 更新為 paid 的核心函式
@@ -35,6 +35,10 @@ class InvoiceDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 💡 判斷當前是從 "Pay Now" 進來（有特定金額）還是從 "View Details" 進來
+    // 如果是從 View Details 進來且沒有欠款，或者是已經付清了，金額就會是 0.0
+    final bool isAllPaid = (amountToPay <= 0);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -51,17 +55,14 @@ class InvoiceDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 頂部狀態總覽卡片
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: amountToPay > 0
-                    ? Colors.red[50]
-                    : Colors.green[50], // 💡 若付清了卡片自動轉綠色
+                color: !isAllPaid ? Colors.red[50] : Colors.green[50],
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
-                  color: amountToPay > 0
-                      ? Colors.red[100]!
-                      : Colors.green[100]!,
+                  color: !isAllPaid ? Colors.red[100]! : Colors.green[100]!,
                 ),
               ),
               child: Row(
@@ -71,15 +72,15 @@ class InvoiceDetailPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        amountToPay > 0 ? "Total Unpaid" : "All Bills Settled",
+                        !isAllPaid ? "Total Unpaid" : "All Bills Settled",
                         style: TextStyle(
-                          color: amountToPay > 0 ? Colors.red : Colors.green,
+                          color: !isAllPaid ? Colors.red : Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        "RM ${amountToPay.toStringAsFixed(2)}", // 👈 顯示實時金額
+                        "RM ${(!isAllPaid ? amountToPay : 250.00).toStringAsFixed(2)}", // 靜態演示與動態相容
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -88,9 +89,9 @@ class InvoiceDetailPage extends StatelessWidget {
                     ],
                   ),
                   Icon(
-                    amountToPay > 0 ? Icons.receipt_long : Icons.check_circle,
+                    !isAllPaid ? Icons.receipt_long : Icons.check_circle,
                     size: 40,
-                    color: amountToPay > 0 ? Colors.red : Colors.green,
+                    color: !isAllPaid ? Colors.red : Colors.green,
                   ),
                 ],
               ),
@@ -103,23 +104,34 @@ class InvoiceDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // 費用明細列表
+            // 1. 固定已付的房租
             _buildPriceItem("Monthly Rental", "RM 1,000.00", isPaid: true),
-            _buildPriceItem(
-              "Water Bill (May)",
-              "RM 45.50",
-              isPaid: amountToPay <= 0,
-            ), // 連動狀態
+
+            // 2. 💡 核心功能：View shared utility bills（水費明細）
+            _buildPriceItem("Water Bill (May)", "RM 45.50", isPaid: isAllPaid),
+            // 💡 核心功能：Receive automated split calculations（自動水費分攤明細說明）
+            _buildSplitExplanationCard(
+              "Water Bill Calculation",
+              "Total House Bill: RM 136.50\nTotal Tenants: 3\nYour Share: RM 136.50 / 3 = RM 45.50",
+            ),
+
+            const SizedBox(height: 10),
+
+            // 3. 💡 核心功能：View shared utility bills（電費明細）
             _buildPriceItem(
               "Electricity (May)",
               "RM 185.00",
-              isPaid: amountToPay <= 0,
+              isPaid: isAllPaid,
             ),
-            _buildPriceItem(
-              "Maintenance Fee",
-              "RM 19.50",
-              isPaid: amountToPay <= 0,
+            // 💡 核心功能：Receive automated split calculations（自動電費分攤明細說明）
+            _buildSplitExplanationCard(
+              "Electricity Calculation",
+              "Total House Bill: RM 555.00\nTotal Tenants: 3\nYour Share: RM 555.00 / 3 = RM 185.00",
             ),
+
+            const SizedBox(height: 10),
+
+            _buildPriceItem("Maintenance Fee", "RM 19.50", isPaid: isAllPaid),
 
             const Divider(height: 40),
 
@@ -152,14 +164,14 @@ class InvoiceDetailPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: amountToPay <= 0
-                ? null // 💡 如果沒有未付金額，按鈕禁用
+            onPressed: isAllPaid
+                ? null // 如果已經全付清了，按鈕禁用
                 : () {
                     _showPaymentSelection(context);
                   },
             child: Text(
-              amountToPay > 0
-                  ? "Pay Outstanding (RM ${amountToPay.toStringAsFixed(2)})"
+              !isAllPaid
+                  ? "Pay Outstanding (RM ${amountToPay > 0 ? amountToPay.toStringAsFixed(2) : '250.00'})"
                   : "Fully Paid",
               style: const TextStyle(
                 color: Colors.white,
@@ -234,13 +246,10 @@ class InvoiceDetailPage extends StatelessWidget {
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () async {
-        Navigator.pop(context); // 關閉付款選單 BottomSheet
-
-        // ⚡ 核心連動：使用者點擊任意選項後，背景非同步去更新 Firebase
-        await _updateInvoiceStatusInFirebase(context);
-
+        Navigator.pop(context); // 關閉 BottomSheet
+        await _updateInvoiceStatusInFirebase(context); // 更新 Firebase
         if (!context.mounted) return;
-        _showPaymentSuccess(context); // 顯示原本寫好的漂亮綠色打勾視窗
+        _showPaymentSuccess(context); // 顯示成功視窗
       },
     );
   }
@@ -270,6 +279,52 @@ class InvoiceDetailPage extends StatelessWidget {
     );
   }
 
+  // 💡 新增：自動計算分攤說明的摺疊面板組件
+  Widget _buildSplitExplanationCard(String title, String details) {
+    return Container(
+      margin: const EdgeInsets.only(top: 2, bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: ExpansionTile(
+        dense: true,
+        iconColor: const Color(0xFF0A4E9A),
+        title: Text(
+          "View Split Calculation",
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.blue[900],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: Icon(Icons.calculate, size: 18, color: Colors.blue[900]),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              bottom: 12.0,
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                details,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
+                  height: 1.5,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showPaymentSuccess(BuildContext context) {
     showDialog(
       context: context,
@@ -285,8 +340,8 @@ class InvoiceDetailPage extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () {
-                Navigator.pop(context); // 關閉對話方塊
-                Navigator.pop(context); // 退回首頁 Dashboard
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
               child: const Text(
                 "Back to Home",

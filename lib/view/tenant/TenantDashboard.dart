@@ -15,8 +15,36 @@ import 'package:firebase_auth/firebase_auth.dart';
 class TenantDashboard extends StatelessWidget {
   const TenantDashboard({super.key});
 
+  // 🔄 新增：處理點擊接受租約的 Firebase 更新函式
+  Future<void> _acceptTenancy(String docId, BuildContext context) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('tenancies')
+          .doc(docId)
+          .update({'status': 'accepted'});
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Tenancy contract accepted successfully!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to accept contract: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -60,10 +88,136 @@ class TenantDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildInfoCard("Tenancy Information", [
-              "Tenancy Code: PMA-T-9921",
-              "Tenancy Period: 2024 - 2025",
-            ]),
+            // 💡 核心改動 1：動態監聽並顯示租約狀態與 Accept 按鈕
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('tenancies')
+                  .where('tenantId', isEqualTo: currentUserId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Card(
+                    child: ListTile(title: Text("Loading tenancy details...")),
+                  );
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  // 萬一沒資料，顯示備用靜態卡片
+                  return _buildStaticInfoCard("Tenancy Information", [
+                    "No tenancy record found.",
+                  ]);
+                }
+
+                final doc = snapshot.data!.docs.first;
+                final data = doc.data() as Map<String, dynamic>;
+                final String status = data['status'] ?? 'pending';
+                final String code = data['tenancyCode'] ?? 'PMA-T-9921';
+                final String period = data['tenancyPeriod'] ?? '2024 - 2025';
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: status == 'accepted'
+                        ? Colors.blue[50]
+                        : Colors.orange[50], // 狀態不同顏色不同
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: status == 'accepted'
+                          ? Colors.blue[100]!
+                          : Colors.orange[100]!,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Tenancy Information",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0A4E9A),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: status == 'accepted'
+                                  ? Colors.green
+                                  : Colors.orange,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              status.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // 🔄 依據狀態顯示內容
+                      if (status == 'accepted') ...[
+                        Text(
+                          "Tenancy Code: $code",
+                          style: const TextStyle(height: 1.5),
+                        ),
+                        Text(
+                          "Tenancy Period: $period",
+                          style: const TextStyle(height: 1.5),
+                        ),
+                      ] else ...[
+                        const Text(
+                          "Your tenancy contract is ready. Please review and accept to active your account.",
+                          style: TextStyle(
+                            height: 1.4,
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[700],
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            icon: const Icon(Icons.gavel, size: 16),
+                            label: const Text(
+                              "ACCEPT TENANCY CONTRACT",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                            onPressed: () => _acceptTenancy(
+                              doc.id,
+                              context,
+                            ), // ⚡ 點擊更新 Firebase
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
+
             const SizedBox(height: 20),
             const Text(
               "My Invoices",
@@ -71,14 +225,11 @@ class TenantDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // 💡 核心改動：使用 StreamBuilder 即時監聽與計算當前用戶的帳單金額
+            // 💡 核心：使用 StreamBuilder 即時監聽與動態累加計算帳單金額
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('invoices')
-                  .where(
-                    'tenantId',
-                    isEqualTo: FirebaseAuth.instance.currentUser?.uid,
-                  )
+                  .where('tenantId', isEqualTo: currentUserId)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -118,7 +269,6 @@ class TenantDashboard extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          // 🔴 動態顯示未付總額
                           _buildInvoiceStat(
                             "Unpaid",
                             "RM ${totalUnpaid.toStringAsFixed(2)}",
@@ -129,7 +279,6 @@ class TenantDashboard extends StatelessWidget {
                             height: 40,
                             color: Colors.grey[300],
                           ),
-                          // 🟢 動態顯示已付總額
                           _buildInvoiceStat(
                             "Paid",
                             "RM ${totalPaid.toStringAsFixed(2)}",
@@ -146,9 +295,8 @@ class TenantDashboard extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => InvoiceDetailPage(
-                                      amountToPay: totalUnpaid,
-                                    ), // 👈 傳遞最新未付總額
+                                    builder: (context) =>
+                                        const InvoiceDetailPage(),
                                   ),
                                 );
                               },
@@ -163,7 +311,7 @@ class TenantDashboard extends StatelessWidget {
                                 foregroundColor: Colors.white,
                               ),
                               onPressed: totalUnpaid <= 0
-                                  ? null // 💡 若已付清，按鈕自動變灰無法重複點擊
+                                  ? null
                                   : () {
                                       Navigator.push(
                                         context,
@@ -171,7 +319,7 @@ class TenantDashboard extends StatelessWidget {
                                           builder: (context) =>
                                               InvoiceDetailPage(
                                                 amountToPay: totalUnpaid,
-                                              ), // 👈 傳遞最新未付總額
+                                              ),
                                         ),
                                       );
                                     },
@@ -192,14 +340,13 @@ class TenantDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // 💡 優化佈局比例後的 GridView，確保 6 個按鈕完美顯現
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2, // 一行 2 個
-              crossAxisSpacing: 12, // 左右間距
-              mainAxisSpacing: 12, // 上下間距
-              childAspectRatio: 2.3, // 調整比例讓按鈕扁一點，釋放空間
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 2.3,
               children: [
                 _buildActionButton(Icons.build, "Maintenance", () {
                   Navigator.push(
@@ -247,7 +394,7 @@ class TenantDashboard extends StatelessWidget {
                 }),
               ],
             ),
-            const SizedBox(height: 20), // 底部留白
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -285,7 +432,8 @@ class TenantDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(String title, List<String> lines) {
+  // 靜態備用資訊卡片
+  Widget _buildStaticInfoCard(String title, List<String> lines) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
