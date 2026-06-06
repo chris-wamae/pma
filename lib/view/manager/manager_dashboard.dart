@@ -15,6 +15,7 @@ import 'package:pma/view/manager/priority_requests_screen.dart';
 import 'package:pma/view/manager/rent_collection_screen.dart';
 import 'package:pma/view/manager/request_details_screen.dart';
 import 'package:pma/view/tenant/ChatListScreen.dart';
+import 'package:pma/view/manager/manager_profile_page.dart';
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
@@ -49,10 +50,21 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Maintenance Dashboard"),
-        centerTitle: true,
-      ),
+        title: const Text("Manager Dashboard"),
 
+        actions: [
+          IconButton(
+            icon: const CircleAvatar(child: Icon(Icons.person)),
+
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ManagerProfilePage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
@@ -204,6 +216,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => RequestDetailsScreen(
+                        docId: "",
                         currentStatus: request["status"],
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pma/view/manager/request_details_screen.dart';
 
 class MaintenanceScreen extends StatefulWidget {
@@ -21,17 +22,17 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   final TextEditingController searchController = TextEditingController();
 
   Color getStatusColor(String status) {
-    switch (status) {
-      case "Pending":
+    switch (status.toLowerCase()) {
+      case "pending":
         return Colors.orange;
 
-      case "In Progress":
+      case "in progress":
         return Colors.blue;
 
-      case "Completed":
+      case "completed":
         return Colors.green;
 
-      case "Urgent":
+      case "urgent":
         return Colors.red;
 
       default:
@@ -90,48 +91,65 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             const SizedBox(height: 15),
 
             Expanded(
-              child: ListView(
-                children: [
-                  if ("Leaking Pipe in Kitchen".toLowerCase().contains(
-                        searchText,
-                      ) &&
-                      shouldShow(pipeStatus))
-                    buildRequestCard(
-                      title: "Leaking Pipe in Kitchen",
-                      unit: "Unit A-3-1",
-                      worker: "John Tan",
-                      status: pipeStatus,
-                    ),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('maintenance_requests')
+                    .orderBy('createdAt', descending: true)
+                    .snapshots(),
 
-                  if ("Aircon Not Working".toLowerCase().contains(searchText) &&
-                      shouldShow(aircondStatus))
-                    buildRequestCard(
-                      title: "Aircon Not Working",
-                      unit: "Unit B-2-4",
-                      worker: "Ahmed Ali",
-                      status: aircondStatus,
-                    ),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  if ("Door Lock Broken".toLowerCase().contains(searchText) &&
-                      shouldShow(doorStatus))
-                    buildRequestCard(
-                      title: "Door Lock Broken",
-                      unit: "Unit C-1-2",
-                      worker: "Mei Ling",
-                      status: doorStatus,
-                    ),
+                  final docs = snapshot.data!.docs;
+                  final filteredDocs = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
 
-                  if ("Water Heater Not Working".toLowerCase().contains(
-                        searchText,
-                      ) &&
-                      shouldShow(heaterStatus))
-                    buildRequestCard(
-                      title: "Water Heater Not Working",
-                      unit: "Unit A-1-3",
-                      worker: "Ravi Kumar",
-                      status: heaterStatus,
-                    ),
-                ],
+                    final status = (data["status"] ?? "pending")
+                        .toString()
+                        .toLowerCase();
+
+                    if (selectedFilter == "All") {
+                      return true;
+                    }
+
+                    if (selectedFilter == "Pending") {
+                      return status == "pending";
+                    }
+
+                    if (selectedFilter == "In Progress") {
+                      return status == "in progress";
+                    }
+
+                    if (selectedFilter == "Completed") {
+                      return status == "completed";
+                    }
+
+                    if (selectedFilter == "Urgent") {
+                      return status == "urgent";
+                    }
+
+                    return true;
+                  }).toList();
+
+                  return ListView.builder(
+                    itemCount: filteredDocs.length,
+                    itemBuilder: (context, index) {
+                      final doc = filteredDocs[index];
+
+                      final data = doc.data() as Map<String, dynamic>;
+
+                      return buildRequestCard(
+                        docId: doc.id,
+                        title: data["category"] ?? "Request",
+                        unit: data["tenantName"] ?? "Tenant",
+                        worker: data["email"] ?? "",
+                        status: (data["status"] ?? "pending").toString(),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -167,6 +185,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   Widget buildRequestCard({
+    required String docId,
     required String title,
     required String unit,
     required String worker,
@@ -181,26 +200,13 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
       child: ListTile(
         onTap: () async {
-          final updatedStatus = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => RequestDetailsScreen(currentStatus: status),
+              builder: (_) =>
+                  RequestDetailsScreen(docId: docId, currentStatus: status),
             ),
           );
-
-          if (updatedStatus != null) {
-            setState(() {
-              if (title == "Leaking Pipe in Kitchen") {
-                pipeStatus = updatedStatus;
-              } else if (title == "Aircon Not Working") {
-                aircondStatus = updatedStatus;
-              } else if (title == "Door Lock Broken") {
-                doorStatus = updatedStatus;
-              } else if (title == "Water Heater Not Working") {
-                heaterStatus = updatedStatus;
-              }
-            });
-          }
         },
 
         leading: const Icon(Icons.build),

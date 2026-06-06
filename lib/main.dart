@@ -58,8 +58,8 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: AppColors.primary),
         ),
       ),
-      // 💡 核心改動：將原本死寫的 ManagerDashboard 改成 TenantDashboard，讓你開機直達租客首頁
-      home: const TenantDashboard(),
+
+      home: const LoginScreen(),
       routes: {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),

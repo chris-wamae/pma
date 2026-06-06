@@ -44,7 +44,7 @@ class _ReportPageState extends State<ReportPage> {
         'isAnonymous': isAnonymous,
         'description': description,
         'status':
-            'pending', // 🚀 預設狀態為 pending，Manager 審批後可以改成 investigating 或 resolved
+            'open', // 🚀 預設狀態為 open，Manager 審批後可以改成 investigating 或 resolved
         'timestamp': FieldValue.serverTimestamp(), // Firebase 伺服器時間
       };
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
 
 class ComplaintsScreen extends StatefulWidget {
   const ComplaintsScreen({super.key});
@@ -11,30 +13,14 @@ class ComplaintsScreen extends StatefulWidget {
 
 class _ComplaintsScreenState extends State<ComplaintsScreen> {
   String selectedFilter = "All";
-
-  List<Map<String, dynamic>> complaints = [
-    {
-      "title": "Noise Complaint",
-      "location": "Unit B-2-4",
-      "date": "12 May 2025",
-      "status": "Open",
-    },
-    {
-      "title": "Poor Cleanliness",
-      "location": "Unit C-1-2",
-      "date": "11 May 2025",
-      "status": "Open",
-    },
-    {
-      "title": "Parking Issue",
-      "location": "Block D",
-      "date": "10 May 2025",
-      "status": "Resolved",
-    },
-  ];
-
   Future<void> generatePdf() async {
     final pdf = pw.Document();
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection("complaints")
+        .get();
+
+    final docs = snapshot.docs;
 
     pdf.addPage(
       pw.Page(
@@ -46,14 +32,25 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
 
               pw.SizedBox(height: 20),
 
-              ...complaints.map(
-                (complaint) => pw.Padding(
+              ...docs.map((doc) {
+                final data = doc.data();
+
+                return pw.Padding(
                   padding: const pw.EdgeInsets.only(bottom: 10),
-                  child: pw.Text(
-                    "${complaint["title"]} - ${complaint["status"]}",
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text("Type: ${data["type"] ?? ""}"),
+
+                      pw.Text("Description: ${data["description"] ?? ""}"),
+
+                      pw.Text("Status: ${data["status"] ?? ""}"),
+
+                      pw.Divider(),
+                    ],
                   ),
-                ),
-              ),
+                );
+              }).toList(),
             ],
           );
         },
@@ -63,13 +60,11 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
-  int get totalComplaints => complaints.length;
+  int totalComplaints = 0;
 
-  int get openComplaints =>
-      complaints.where((c) => c["status"] == "Open").length;
+  int openComplaints = 0;
 
-  int get resolvedComplaints =>
-      complaints.where((c) => c["status"] == "Resolved").length;
+  int resolvedComplaints = 0;
 
   bool shouldShow(String status) {
     if (selectedFilter == "All") {
@@ -80,7 +75,16 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
   }
 
   Color getStatusColor(String status) {
-    return status == "Resolved" ? Colors.green : Colors.orange;
+    switch (status.toLowerCase()) {
+      case "resolved":
+        return Colors.green;
+
+      case "open":
+        return Colors.orange;
+
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
@@ -154,17 +158,79 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
             const SizedBox(height: 20),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: complaints.length,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('complaints')
+                    .orderBy('timestamp', descending: true)
+                    .snapshots(),
 
-                itemBuilder: (context, index) {
-                  final complaint = complaints[index];
-
-                  if (!shouldShow(complaint["status"])) {
-                    return const SizedBox();
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
                   }
 
-                  return complaintCard(complaint, index);
+                  final docs = snapshot.data!.docs;
+                  totalComplaints = docs.length;
+
+                  openComplaints = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return (data["status"] ?? "open") == "open";
+                  }).length;
+
+                  resolvedComplaints = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return (data["status"] ?? "") == "resolved";
+                  }).length;
+
+                  final filteredDocs = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+
+                    final status = (data["status"] ?? "open")
+                        .toString()
+                        .toLowerCase();
+
+                    if (selectedFilter == "All") {
+                      return true;
+                    }
+
+                    if (selectedFilter == "Open") {
+                      return status == "open";
+                    }
+
+                    if (selectedFilter == "Resolved") {
+                      return status == "resolved";
+                    }
+
+                    return true;
+                  }).toList();
+                  return ListView.builder(
+                    itemCount: filteredDocs.length,
+                    itemBuilder: (context, index) {
+                      final doc = filteredDocs[index];
+
+                      final complaint = doc.data() as Map<String, dynamic>;
+
+                      final Timestamp? timestamp =
+                          complaint["timestamp"] as Timestamp?;
+
+                      complaint["docId"] = doc.id;
+
+                      complaint["title"] = complaint["type"] ?? "No Title";
+
+                      complaint["location"] =
+                          complaint["description"] ?? "No Description";
+
+                      complaint["date"] = timestamp != null
+                          ? DateFormat(
+                              "dd MMM yyyy HH:mm",
+                            ).format(timestamp.toDate())
+                          : "No Date";
+
+                      complaint["status"] = complaint["status"] ?? "open";
+
+                      return complaintCard(complaint, index);
+                    },
+                  );
                 },
               ),
             ),
@@ -228,15 +294,17 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-                  Text("Location: ${complaint["location"]}"),
+                  Text("Location: ${complaint["location"] ?? "Unknown"}"),
 
                   const SizedBox(height: 8),
 
-                  Text("Date: ${complaint["date"]}"),
+                  Text("Date: ${complaint["date"] ?? "No Date"}"),
 
                   const SizedBox(height: 8),
 
-                  Text("Status: ${complaint["status"]}"),
+                  Text(
+                    "Status: ${complaint["status"] == "resolved" ? "Resolved" : "Open"}",
+                  ),
                 ],
               ),
 
@@ -256,27 +324,29 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
         leading: const Icon(Icons.report_problem),
 
         title: Text(
-          complaint["title"],
+          complaint["title"] ?? "No Title",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
 
-        subtitle: Text("${complaint["location"]} • ${complaint["date"]}"),
+        subtitle: Text(
+          "${complaint["location"] ?? "Unknown"} • ${complaint["date"] ?? "No Date"}",
+        ),
 
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
             Text(
-              complaint["status"],
+              complaint["status"] ?? "Open",
               style: TextStyle(
-                color: getStatusColor(complaint["status"]),
+                color: getStatusColor(complaint["status"] ?? "Open"),
                 fontWeight: FontWeight.bold,
               ),
             ),
 
             const SizedBox(height: 4),
 
-            if (complaint["status"] == "Open")
+            if ((complaint["status"] ?? "open") == "open")
               GestureDetector(
                 onTap: () {
                   showDialog(
@@ -297,10 +367,11 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
                         ),
 
                         ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              complaints[index]["status"] = "Resolved";
-                            });
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection("complaints")
+                                .doc(complaint["docId"])
+                                .update({"status": "resolved"});
 
                             Navigator.pop(context);
 
