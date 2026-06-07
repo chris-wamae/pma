@@ -3,25 +3,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class InvoiceDetailPage extends StatelessWidget {
-  final double amountToPay; // 接收從 Dashboard 帶過來的真實動態金額
-
-  // 構造函數：給予 amountToPay 預設值 0.0，這樣從 "View Details" 進來不傳參也能正常打開並看到明細！
+  final double amountToPay;
   const InvoiceDetailPage({super.key, this.amountToPay = 0.0});
 
-  // 🔄 處理 Firebase 更新為 paid 的核心函式
   Future<void> _updateInvoiceStatusInFirebase(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     try {
-      // 1. 搜尋該登入用戶所有處於 unpaid 狀態的帳單
       final snapshot = await FirebaseFirestore.instance
           .collection('invoices')
           .where('tenantId', isEqualTo: user.uid)
           .where('status', isEqualTo: 'unpaid')
           .get();
 
-      // 2. 批次將它們全部更新為 paid 狀態
       for (var doc in snapshot.docs) {
         await FirebaseFirestore.instance
             .collection('invoices')
@@ -35,10 +30,7 @@ class InvoiceDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 💡 判斷當前是從 "Pay Now" 進來（有特定金額）還是從 "View Details" 進來
-    // 如果是從 View Details 進來且沒有欠款，或者是已經付清了，金額就會是 0.0
     final bool isAllPaid = (amountToPay <= 0);
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -55,7 +47,6 @@ class InvoiceDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 頂部狀態總覽卡片
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -104,26 +95,20 @@ class InvoiceDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // 1. 固定已付的房租
             _buildPriceItem("Monthly Rental", "RM 1,000.00", isPaid: true),
-
-            // 2. 💡 核心功能：View shared utility bills（水費明細）
             _buildPriceItem("Water Bill (May)", "RM 45.50", isPaid: isAllPaid),
-            // 💡 核心功能：Receive automated split calculations（自動水費分攤明細說明）
             _buildSplitExplanationCard(
               "Water Bill Calculation",
               "Total House Bill: RM 136.50\nTotal Tenants: 3\nYour Share: RM 136.50 / 3 = RM 45.50",
             ),
 
             const SizedBox(height: 10),
-
-            // 3. 💡 核心功能：View shared utility bills（電費明細）
             _buildPriceItem(
               "Electricity (May)",
               "RM 185.00",
               isPaid: isAllPaid,
             ),
-            // 💡 核心功能：Receive automated split calculations（自動電費分攤明細說明）
+            //Receive automated split calculations//
             _buildSplitExplanationCard(
               "Electricity Calculation",
               "Total House Bill: RM 555.00\nTotal Tenants: 3\nYour Share: RM 555.00 / 3 = RM 185.00",
@@ -134,8 +119,6 @@ class InvoiceDetailPage extends StatelessWidget {
             _buildPriceItem("Maintenance Fee", "RM 19.50", isPaid: isAllPaid),
 
             const Divider(height: 40),
-
-            // 支付說明
             const Text(
               "Payment Instructions",
               style: TextStyle(fontWeight: FontWeight.bold),
